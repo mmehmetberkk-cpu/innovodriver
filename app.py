@@ -51,40 +51,88 @@ st.markdown("""
     [data-testid="stSidebar"] .stButton > button {
         width: 100%;
         text-align: left;
-        padding: 0.75rem 1rem;
-        margin-bottom: 0.5rem;
-        border-radius: 0.5rem;
+        padding: 0.85rem 1.2rem;
+        margin-bottom: 0.6rem;
+        border-radius: 8px;
         transition: all 0.3s ease;
         background-color: rgba(255, 255, 255, 0.1);
         color: #ffffff;
         border: 1px solid rgba(255, 255, 255, 0.2);
+        font-size: 0.95rem;
+        font-weight: 500;
     }
     [data-testid="stSidebar"] .stButton > button:hover {
-        transform: translateX(5px);
-        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
-        background-color: rgba(255, 255, 255, 0.2);
+        transform: translateX(8px);
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.5);
+        background-color: rgba(255, 255, 255, 0.25);
+        border-color: rgba(255, 255, 255, 0.4);
     }
     [data-testid="stSidebar"] .stButton > button[kind="primary"] {
         background-color: #ffffff;
         color: #1e40af;
-        font-weight: 600;
+        font-weight: 700;
+        box-shadow: 0 4px 12px rgba(255, 255, 255, 0.3);
+    }
+    [data-testid="stSidebar"] .stButton > button[kind="primary"]:hover {
+        background-color: #f0f7ff;
+        transform: translateX(8px);
     }
     [data-testid="stSidebar"] h1 {
         color: #ffffff;
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
-        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        font-size: 1.6rem;
+        margin-bottom: 1.5rem;
+        text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        font-weight: 700;
+    }
+    [data-testid="stSidebar"] .stCaption {
+        color: #c7d2fe;
+        font-size: 0.85rem;
+        margin-top: 1rem;
     }
     [data-testid="stSidebar"] .stMarkdown {
         color: #e0e7ff;
     }
     
-    /* Main Content Area - White Background */
+    /* Main Content Area - White Background with Better Spacing */
     .main .block-container {
         background-color: #ffffff;
+        border-radius: 12px;
+        padding: 2.5rem;
+        box-shadow: 0 4px 20px rgba(30, 58, 138, 0.08);
+        max-width: 1400px;
+    }
+    
+    /* Admin Panel Content Styling */
+    .element-container {
+        margin-bottom: 1rem;
+    }
+    
+    /* Better spacing for admin sections */
+    [data-testid="stVerticalBlock"] > [style*="flex-direction: column"] > [data-testid="stVerticalBlock"] {
+        gap: 1rem;
+    }
+    
+    /* Form containers in admin panel */
+    .stForm {
+        background-color: #f8fafc;
+        padding: 1.5rem;
         border-radius: 10px;
-        padding: 2rem;
-        box-shadow: 0 2px 10px rgba(30, 58, 138, 0.1);
+        border: 1px solid #e2e8f0;
+        margin: 1rem 0;
+    }
+    
+    /* Radio buttons in admin - better spacing */
+    .stRadio > div {
+        gap: 1rem;
+        padding: 0.5rem 0;
+    }
+    
+    /* Metric cards - better styling */
+    [data-testid="stMetricContainer"] {
+        background-color: #f0f7ff;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid #dbeafe;
     }
     
     /* Headers - Blue Color */
@@ -415,10 +463,10 @@ def login_page():
     _log("C", "app.py:login_page:before_load_users", "About to load users", {})
     # #endregion agent log
     try:
-        users = load_users()
-        # #region agent log
-        _log("C", "app.py:login_page:after_load_users", "Users loaded", {"user_count": len(users), "usernames": list(users.keys())})
-        # #endregion agent log
+    users = load_users()
+    # #region agent log
+    _log("C", "app.py:login_page:after_load_users", "Users loaded", {"user_count": len(users), "usernames": list(users.keys())})
+    # #endregion agent log
         
         # Kullanıcı yoksa uyarı göster
         if not users:
@@ -473,8 +521,8 @@ def login_page():
                 # #region agent log
                 _log("C", "app.py:login_page:login_failed", "Login failed", {"username": username, "user_found": user is not None, "password_match": user["password"] == password if user else False})
                 # #endregion agent log
-                st.error("Kullanıcı adı veya şifre hatalı!")
-                st.info("💡 Şifrenizi mi unuttunuz? Yukarıdaki 'Şifre Sıfırla' butonunu kullanın.")
+                st.error("❌ Invalid username or password!")
+                st.info("💡 Forgot your password? Use the 'Reset Password' button above.")
 
 def reset_password_page():
     """Password reset page - Email entry"""
@@ -621,13 +669,13 @@ def form_page():
     st.markdown("#### 📋 Basic Information")
     
     # Vehicle selection - Outside form (for auto rerun)
-    vehicle_options = [""] + vehicles + ["Other"]
-    selected_vehicle = st.selectbox(
+        vehicle_options = [""] + vehicles + ["Other"]
+        selected_vehicle = st.selectbox(
         "Vehicle *",
-        options=vehicle_options,
-        key="vehicle_select"
-    )
-    
+            options=vehicle_options,
+            key="vehicle_select"
+        )
+        
     # Other Vehicle (conditional) - Outside form
     # Clear session state when "Other" is not selected
     if selected_vehicle != "Other":
@@ -639,7 +687,7 @@ def form_page():
         st.info("ℹ️ **Manual Vehicle Entry:** Please enter the vehicle manually")
         # Get value from session state, or empty string
         current_value = st.session_state.get("other_vehicle_input", "")
-        other_vehicle = st.text_input(
+            other_vehicle = st.text_input(
             "Vehicle Information *",
             placeholder="e.g., FORD Transit 2020",
             key="other_vehicle_input",
@@ -665,34 +713,34 @@ def form_page():
                 st.text_input("🚗 Vehicle", value=other_vehicle, disabled=True, key="vehicle_display")
             elif selected_vehicle and selected_vehicle != "Other":
                 st.text_input("🚗 Vehicle", value=selected_vehicle, disabled=True, key="vehicle_display")
-            
-            # Odometer Reading
-            odometer_start = st.number_input(
+        
+        # Odometer Reading
+        odometer_start = st.number_input(
                 "📏 Odometer (KM)",
-                min_value=0,
-                step=1,
+            min_value=0,
+            step=1,
                 key="odometer_input",
                 help="Starting kilometrage"
-            )
+        )
         
         with col2:
-            # Fuel Level
-            fuel_options = [""] + fuel_levels
-            fuel_level = st.selectbox(
+        # Fuel Level
+        fuel_options = [""] + fuel_levels
+        fuel_level = st.selectbox(
                 "⛽ Fuel Level",
-                options=fuel_options,
-                key="fuel_level_select"
-            )
-            
+            options=fuel_options,
+            key="fuel_level_select"
+        )
+        
             # Other Fuel (conditional)
-            other_fuel = None
-            if fuel_level == "Other":
-                other_fuel = st.text_input(
+        other_fuel = None
+        if fuel_level == "Other":
+            other_fuel = st.text_input(
                     "Fuel Level (Manual)",
                     placeholder="Enter manually",
-                    key="other_fuel_input"
-                )
-            
+                key="other_fuel_input"
+            )
+        
             # Oil Level - Percentage list
             oil_level_options = ["", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%", "Other"]
             oil_level = st.selectbox(
@@ -896,7 +944,7 @@ def admin_panel():
             "📦 Items Management": "items_management"
         }
         
-        # Menü butonları
+        # Menu buttons
         for menu_text, section_key in menu_options.items():
             if st.button(
                 menu_text,
@@ -906,14 +954,12 @@ def admin_panel():
             ):
                 st.session_state.admin_section = section_key
                 st.rerun()
-        
+
         st.markdown("---")
         st.caption(f"👤 {st.session_state.full_name}")
     
-    # Ana içerik alanı
-    st.title("👨‍💼 Admin Panel")
-    
-    # Mesaj gösterimi (varsa)
+    # Main content area
+    # Message display (if any)
     if st.session_state.admin_message:
         if st.session_state.admin_message_type == "success":
             st.success(st.session_state.admin_message)
@@ -923,11 +969,10 @@ def admin_panel():
             st.warning(st.session_state.admin_message)
         elif st.session_state.admin_message_type == "info":
             st.info(st.session_state.admin_message)
-        # Mesajı temizle
+        # Clear message
         st.session_state.admin_message = None
         st.session_state.admin_message_type = None
-    
-    st.markdown("---")
+        st.markdown("---")
     
     # Seçili bölüme göre içerik göster
     if st.session_state.admin_section == "form_submissions":
@@ -947,8 +992,8 @@ def admin_panel():
 
 def admin_form_submissions():
     """Form gönderimlerini görüntüleme"""
-    st.subheader("Form Gönderimleri")
-    st.write("Form gönderimlerini görüntüleyebilir ve yönetebilirsiniz.")
+        st.subheader("📋 Form Submissions")
+        st.write("View and manage all form submissions.")
     
     try:
         submissions = load_form_submissions()
@@ -957,64 +1002,64 @@ def admin_form_submissions():
             st.info("📭 Henüz form gönderimi bulunmamaktadır.")
             return
         
-        st.metric("Toplam Gönderim", len(submissions))
+        st.metric("Total Submissions", len(submissions))
         
-        # Filtreleme seçenekleri
+        # Filtering options
         col1, col2, col3 = st.columns(3)
         with col1:
             filter_driver = st.selectbox(
-                "Sürücüye Göre Filtrele",
-                options=["Tümü"] + list(set([s.get("Driver Name", "N/A") for s in submissions if s.get("Driver Name")]))
+                "Filter by Driver",
+                options=["All"] + list(set([s.get("Driver Name", "N/A") for s in submissions if s.get("Driver Name")]))
             )
         with col2:
             filter_vehicle = st.selectbox(
-                "Araca Göre Filtrele",
-                options=["Tümü"] + list(set([s.get("Vehicle", "N/A") for s in submissions if s.get("Vehicle")]))
+                "Filter by Vehicle",
+                options=["All"] + list(set([s.get("Vehicle", "N/A") for s in submissions if s.get("Vehicle")]))
             )
         with col3:
             sort_by = st.selectbox(
-                "Sıralama",
-                options=["En Yeni", "En Eski"]
+                "Sort By",
+                options=["Newest", "Oldest"]
             )
         
-        # Filtreleme
+        # Filtering
         filtered_submissions = submissions
-        if filter_driver != "Tümü":
+        if filter_driver != "All":
             filtered_submissions = [s for s in filtered_submissions if s.get("Driver Name") == filter_driver]
-        if filter_vehicle != "Tümü":
+        if filter_vehicle != "All":
             filtered_submissions = [s for s in filtered_submissions if s.get("Vehicle") == filter_vehicle]
         
-        # Sıralama
-        if sort_by == "En Yeni":
+        # Sorting
+        if sort_by == "Newest":
             filtered_submissions = sorted(filtered_submissions, key=lambda x: x.get("Timestamp", ""), reverse=True)
         else:
             filtered_submissions = sorted(filtered_submissions, key=lambda x: x.get("Timestamp", ""))
         
-        st.write(f"**Gösterilen:** {len(filtered_submissions)} / {len(submissions)}")
+        st.write(f"**Showing:** {len(filtered_submissions)} / {len(submissions)}")
         
-        # Detaylı görünüm
+        # View mode
         view_mode = st.radio(
-            "Görünüm Modu",
-            options=["Tablo", "Kart"],
+            "View Mode",
+            options=["Table", "Card"],
             horizontal=True
         )
         
-        if view_mode == "Tablo":
-            # Tablo görünümü
+        if view_mode == "Table":
+            # Table view
             import pandas as pd
             df = pd.DataFrame(filtered_submissions)
             st.dataframe(df, width='stretch', height=400)
             
-            # CSV indirme
+            # CSV download
             csv = df.to_csv(index=False).encode('utf-8-sig')
             st.download_button(
-                label="📥 CSV Olarak İndir",
+                label="📥 Download as CSV",
                 data=csv,
                 file_name=f"form_submissions_{pd.Timestamp.now().strftime('%Y%m%d_%H%M%S')}.csv",
                 mime="text/csv"
             )
         else:
-            # Kart görünümü
+            # Card view
             for idx, submission in enumerate(filtered_submissions):
                 with st.expander(
                     f"📋 {submission.get('Driver Name', 'N/A')} - {submission.get('Vehicle', 'N/A')} - {submission.get('Timestamp', 'N/A')}",
@@ -1023,23 +1068,23 @@ def admin_form_submissions():
                     col1, col2 = st.columns(2)
                     
                     with col1:
-                        st.write("**Temel Bilgiler**")
-                        st.write(f"**Sürücü:** {submission.get('Driver Name', 'N/A')}")
-                        st.write(f"**Araç:** {submission.get('Vehicle', 'N/A')}")
-                        st.write(f"**KM:** {submission.get('Odometer Start', 'N/A')}")
-                        st.write(f"**Yakıt Seviyesi:** {submission.get('Fuel Level', 'N/A')}")
-                        st.write(f"**Yağ Seviyesi:** {submission.get('Oil Level', 'N/A')}")
+                        st.write("**Basic Information**")
+                        st.write(f"**Driver:** {submission.get('Driver Name', 'N/A')}")
+                        st.write(f"**Vehicle:** {submission.get('Vehicle', 'N/A')}")
+                        st.write(f"**Odometer:** {submission.get('Odometer Start', 'N/A')} KM")
+                        st.write(f"**Fuel Level:** {submission.get('Fuel Level', 'N/A')}")
+                        st.write(f"**Oil Level:** {submission.get('Oil Level', 'N/A')}")
                     
                     with col2:
-                        st.write("**Ekipmanlar**")
-                        st.write(f"**Yakıt Kartı:** {submission.get('Fuel Card', 'N/A')}")
-                        st.write(f"**Ölçü Bandı:** {submission.get('Measuring Tape', 'N/A')}")
-                        st.write(f"**Güvenlik Yeleği:** {submission.get('Safety Vest', 'N/A')}")
-                        st.write(f"**Yakıt Miktarı:** {submission.get('Fuel Amount', 'N/A')}")
-                        st.write(f"**Tarih:** {submission.get('Timestamp', 'N/A')}")
+                        st.write("**Equipment**")
+                        st.write(f"**Fuel Card:** {submission.get('Fuel Card', 'N/A')}")
+                        st.write(f"**Measuring Tape:** {submission.get('Measuring Tape', 'N/A')}")
+                        st.write(f"**Safety Vest:** {submission.get('Safety Vest', 'N/A')}")
+                        st.write(f"**Fuel Amount:** {submission.get('Fuel Amount', 'N/A')}")
+                        st.write(f"**Date:** {submission.get('Timestamp', 'N/A')}")
                     
-                    # Kontroller detayları
-                    st.write("**Kontroller**")
+                    # Checks details
+                    st.write("**Checks**")
                     
                     # Exterior Checks
                     exterior_cols = [col for col in submission.keys() if col.startswith("Exterior_")]
@@ -1084,8 +1129,8 @@ def admin_form_submissions():
                     st.divider()
     
     except Exception as e:
-        st.error(f"❌ Veriler yüklenirken hata oluştu: {str(e)}")
-        with st.expander("🔍 Hata Detayları"):
+        st.error(f"❌ Error loading data: {str(e)}")
+        with st.expander("🔍 Error Details"):
             st.exception(e)
 
 def admin_user_management():
@@ -1689,15 +1734,15 @@ def main():
                         type="primary" if st.session_state.current_page == "form" else "secondary"):
                 st.session_state.current_page = "form"
                 st.rerun()
-        
-        if st.session_state.is_admin:
+            
+            if st.session_state.is_admin:
             col_idx += 1
             with menu_cols[col_idx]:
                 if st.button("👨‍💼 Admin", width='stretch',
                             type="primary" if st.session_state.current_page == "admin" else "secondary"):
                     st.session_state.current_page = "admin"
                     st.rerun()
-        
+            
         col_idx += 1
         with menu_cols[col_idx]:
             if st.button("🚪", width='stretch', help="Çıkış Yap"):
@@ -1716,7 +1761,7 @@ def main():
             reset_password_page()
         else:
             st.session_state.current_page = "login"
-            login_page()
+        login_page()
     else:
         if st.session_state.current_page == "admin" and st.session_state.is_admin:
             admin_panel()
