@@ -412,10 +412,20 @@ def login_page():
     # #region agent log
     _log("C", "app.py:login_page:before_load_users", "About to load users", {})
     # #endregion agent log
-    users = load_users()
-    # #region agent log
-    _log("C", "app.py:login_page:after_load_users", "Users loaded", {"user_count": len(users), "usernames": list(users.keys())})
-    # #endregion agent log
+    try:
+        users = load_users()
+        # #region agent log
+        _log("C", "app.py:login_page:after_load_users", "Users loaded", {"user_count": len(users), "usernames": list(users.keys())})
+        # #endregion agent log
+        
+        # Kullanıcı yoksa uyarı göster
+        if not users:
+            st.warning("⚠️ No users found. Please check your data source (Excel file or Google Sheets).")
+            st.info("💡 If using Excel, make sure `form_data.xlsx` exists. If using Google Sheets, check your credentials in Streamlit secrets.")
+    except Exception as e:
+        st.error(f"❌ Error loading users: {str(e)}")
+        st.info("💡 Please check your data source configuration. For Streamlit Cloud, you may need to configure Google Sheets or ensure the Excel file is accessible.")
+        users = {}
     
     with st.form("login_form"):
         username = st.text_input("Username", key="login_username")

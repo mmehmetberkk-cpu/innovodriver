@@ -112,11 +112,23 @@ def _log(hypothesis_id, location, message, data):
     # Gerekirse Streamlit'in kendi logging sistemini kullanabilirsiniz
     pass
 
-# Excel dosyası yolu - bulut ortamında geçici dizin kullan
+# Excel dosyası yolu - önce mevcut dizinde ara, yoksa geçici dizin kullan
 # Google Sheets kullanılıyorsa Excel dosyası kullanılmayacak
 import tempfile
+
+# Önce mevcut dizinde ara (GitHub'dan gelen dosya için)
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+EXCEL_FILE_LOCAL = os.path.join(CURRENT_DIR, "form_data.xlsx")
+
+# Geçici dizin (fallback)
 TEMP_DIR = tempfile.gettempdir()
-EXCEL_FILE = os.path.join(TEMP_DIR, "form_data.xlsx")
+EXCEL_FILE_TEMP = os.path.join(TEMP_DIR, "form_data.xlsx")
+
+# Önce local'de ara, yoksa temp kullan
+if os.path.exists(EXCEL_FILE_LOCAL):
+    EXCEL_FILE = EXCEL_FILE_LOCAL
+else:
+    EXCEL_FILE = EXCEL_FILE_TEMP
 
 def create_default_excel():
     """Default değerlerle Excel dosyası oluşturur"""
