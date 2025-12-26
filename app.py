@@ -409,6 +409,10 @@ def form_page():
     
     # Create form
     with st.form("vehicle_inspection_form"):
+        # Initialize variables
+        other_oil = None
+        other_fuel = None
+        
         # Compact basic information - 2 columns
         col1, col2 = st.columns(2)
         
@@ -441,13 +445,12 @@ def form_page():
             )
         
             # Other Fuel (conditional)
-        other_fuel = None
-        if fuel_level == "Other":
-            other_fuel = st.text_input(
+            if fuel_level == "Other":
+                other_fuel = st.text_input(
                     "Fuel Level (Manual)",
                     placeholder="Enter manually",
-                key="other_fuel_input"
-            )
+                    key="other_fuel_input"
+                )
         
             # Oil Level - Percentage list
             oil_level_options = ["", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%", "Other"]
@@ -458,13 +461,14 @@ def form_page():
             )
             
             # Other Oil Level (conditional)
-            other_oil = None
             if oil_level == "Other":
                 other_oil = st.text_input(
                     "Oil Level (Manual)",
                     placeholder="e.g., 15% or Low",
                     key="other_oil_input"
                 )
+            else:
+                other_oil = None
         
         st.markdown("---")
         
