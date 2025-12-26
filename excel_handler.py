@@ -736,15 +736,29 @@ def update_user(username, password=None, full_name=None, email=None, is_admin=No
 def update_excel_with_admin_column():
     """Mevcut Excel dosyasına Admin ve Email kolonlarını ekler ve admin kullanıcısını ekler
     Google Sheets kullanılıyorsa bu fonksiyon hiçbir şey yapmaz (Google Sheets'te manuel yapılmalı)
+    NOT: Bu fonksiyon mevcut kullanıcıları korur, sadece eksik kolonları ve admin kullanıcısını ekler
     """
     # Google Sheets kullanılıyorsa Excel işlemlerini atla
     if USE_GOOGLE_SHEETS:
         _log("D", "excel_handler.py:update_excel_with_admin_column", "Google Sheets enabled, skipping Excel update", {})
         return
     
+    # Dosya yoksa veya Users sheet'i yoksa hiçbir şey yapma (get_excel_file zaten oluşturuyor)
+    if not os.path.exists(EXCEL_FILE):
+        return
+    
     try:
-        wb = get_excel_file()
+        wb = load_workbook(EXCEL_FILE)
+        
+        # Users sheet'i yoksa hiçbir şey yapma
+        if "Users" not in wb.sheetnames:
+            return
+        
         ws = wb["Users"]
+        
+        # Başlık satırı yoksa hiçbir şey yapma
+        if ws.max_row < 1:
+            return
         
         # Başlık satırını kontrol et
         headers = [cell.value for cell in ws[1]]
@@ -765,24 +779,34 @@ def update_excel_with_admin_column():
         # Admin kolonu yoksa ekle
         if "Admin" not in headers:
             _log("D", "excel_handler.py:update_excel_with_admin_column", "Adding Admin column to headers", {"current_headers": headers})
-            ws.cell(row=1, column=len(headers) + 1, value="Admin")
+            admin_col_idx = len(headers) + 1
+            ws.cell(row=1, column=admin_col_idx, value="Admin")
             headers.append("Admin")
             
-            # Mevcut kullanıcılara "No" ekle
+            # Mevcut kullanıcılara "No" ekle (admin hariç)
             for row_idx in range(2, ws.max_row + 1):
-                ws.cell(row=row_idx, column=len(headers), value="No")
+                username = ws.cell(row=row_idx, column=1).value
+                if username and username.lower() == "admin":
+                    ws.cell(row=row_idx, column=admin_col_idx, value="Yes")
+                else:
+                    ws.cell(row=row_idx, column=admin_col_idx, value="No")
         
         # Admin kullanıcısı var mı kontrol et
         admin_exists = False
         for row in ws.iter_rows(min_row=2, values_only=True):
-            if row and row[0] == "admin":
+            if row and row[0] and str(row[0]).lower() == "admin":
                 admin_exists = True
                 break
         
         # Admin kullanıcısı yoksa ekle
         if not admin_exists:
             _log("D", "excel_handler.py:update_excel_with_admin_column", "Adding admin user", {})
-            ws.append(["admin", "admin123", "Admin User", "admin@example.com", "Yes"])
+            # Admin kolonu varsa "Yes" ekle
+            admin_col_idx = len(headers) if "Admin" in headers else None
+            if admin_col_idx:
+                ws.append(["admin", "admin123", "Admin User", "admin@example.com", "Yes"])
+            else:
+                ws.append(["admin", "admin123", "Admin User", "admin@example.com"])
         
         wb.save(EXCEL_FILE)
         _log("D", "excel_handler.py:update_excel_with_admin_column", "Excel updated successfully", {})
