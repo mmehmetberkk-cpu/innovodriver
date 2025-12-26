@@ -34,12 +34,19 @@ st.set_page_config(
     initial_sidebar_state="auto"
 )
 
-# Mobile CSS optimization
+# Mobile CSS optimization - White & Blue Theme
 st.markdown("""
 <style>
-    /* Admin Panel Sidebar Styling */
+    /* Main App Background - White */
+    .stApp {
+        background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+        padding: 0.5rem;
+    }
+    
+    /* Sidebar - Blue Theme */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+        background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
+        box-shadow: 2px 0 10px rgba(30, 58, 138, 0.2);
     }
     [data-testid="stSidebar"] .stButton > button {
         width: 100%;
@@ -48,26 +55,117 @@ st.markdown("""
         margin-bottom: 0.5rem;
         border-radius: 0.5rem;
         transition: all 0.3s ease;
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
     }
     [data-testid="stSidebar"] .stButton > button:hover {
         transform: translateX(5px);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+    [data-testid="stSidebar"] .stButton > button[kind="primary"] {
+        background-color: #ffffff;
+        color: #1e40af;
+        font-weight: 600;
     }
     [data-testid="stSidebar"] h1 {
         color: #ffffff;
         font-size: 1.5rem;
         margin-bottom: 1rem;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     }
     [data-testid="stSidebar"] .stMarkdown {
-        color: #d1d5db;
+        color: #e0e7ff;
     }
     
-    /* Mobile-friendly font and spacing */
-    .stApp {
-        padding: 0.5rem;
+    /* Main Content Area - White Background */
+    .main .block-container {
+        background-color: #ffffff;
+        border-radius: 10px;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(30, 58, 138, 0.1);
     }
+    
+    /* Headers - Blue Color */
+    h1 {
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        color: #1e40af;
+        font-weight: 700;
+    }
+    h2 {
+        font-size: 1.2rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0.3rem;
+        color: #2563eb;
+        font-weight: 600;
+    }
+    h3 {
+        font-size: 1rem;
+        margin-top: 0.3rem;
+        margin-bottom: 0.2rem;
+        color: #3b82f6;
+        font-weight: 600;
+    }
+    h4 {
+        font-size: 0.9rem;
+        margin-top: 0.2rem;
+        margin-bottom: 0.1rem;
+        color: #60a5fa;
+    }
+    
+    /* Buttons - Blue Theme */
+    .stButton > button:not([data-testid="stSidebar"] .stButton > button) {
+        min-height: 44px;
+        font-size: 16px;
+        border-radius: 8px;
+        background-color: #2563eb;
+        color: #ffffff;
+        border: none;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+    .stButton > button:not([data-testid="stSidebar"] .stButton > button):hover {
+        background-color: #1e40af;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        transform: translateY(-2px);
+    }
+    .stButton > button[kind="secondary"] {
+        background-color: #ffffff;
+        color: #2563eb;
+        border: 2px solid #2563eb;
+    }
+    .stButton > button[kind="secondary"]:hover {
+        background-color: #eff6ff;
+        border-color: #1e40af;
+    }
+    
+    /* Input Fields - White with Blue Border */
+    .stTextInput > div > div > input,
+    .stSelectbox > div > div > select,
+    .stNumberInput > div > div > input,
+    .stTextArea > div > div > textarea {
+        font-size: 16px;
+        border: 2px solid #dbeafe;
+        border-radius: 8px;
+        background-color: #ffffff;
+        transition: all 0.3s ease;
+    }
+    .stTextInput > div > div > input:focus,
+    .stSelectbox > div > div > select:focus,
+    .stNumberInput > div > div > input:focus,
+    .stTextArea > div > div > textarea:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    
+    /* Forms - White Background */
     .stForm {
         padding: 0.5rem;
+        background-color: #ffffff;
+        border-radius: 10px;
+        border: 1px solid #dbeafe;
     }
     /* Compact input fields */
     .stTextInput > div > div > input {
@@ -99,27 +197,139 @@ st.markdown("""
         margin-top: 0.2rem;
         margin-bottom: 0.1rem;
     }
-    /* Compact radio buttons */
+    /* Radio Buttons - Blue Theme */
     .stRadio > div {
         gap: 0.5rem;
     }
-    /* Touch-friendly buttons */
-    .stButton > button {
-        min-height: 44px;
-        font-size: 16px;
-        border-radius: 8px;
+    .stRadio > div > label {
+        color: #1e40af;
+        font-weight: 500;
     }
-    /* Better spacing for tabs */
+    
+    /* Tabs - Blue Theme */
     .stTabs [data-baseweb="tab-list"] {
         gap: 0.5rem;
+        background-color: #eff6ff;
+        border-radius: 8px;
+        padding: 0.5rem;
     }
+    .stTabs [data-baseweb="tab"] {
+        background-color: #ffffff;
+        color: #2563eb;
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        transition: all 0.3s ease;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #2563eb;
+        color: #ffffff;
+        font-weight: 600;
+    }
+    
+    /* Success/Error/Info/Warning Messages - Blue Theme */
+    .stSuccess {
+        background-color: #dbeafe;
+        border-left: 4px solid #2563eb;
+        color: #1e40af;
+        padding: 1rem;
+        border-radius: 8px;
+    }
+    .stError {
+        background-color: #fee2e2;
+        border-left: 4px solid #dc2626;
+        color: #991b1b;
+        padding: 1rem;
+        border-radius: 8px;
+    }
+    .stInfo {
+        background-color: #e0f2fe;
+        border-left: 4px solid #0ea5e9;
+        color: #0c4a6e;
+        padding: 1rem;
+        border-radius: 8px;
+    }
+    .stWarning {
+        background-color: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        color: #92400e;
+        padding: 1rem;
+        border-radius: 8px;
+    }
+    
+    /* Checkboxes - Blue Theme */
+    .stCheckbox > label {
+        color: #1e40af;
+        font-weight: 500;
+    }
+    .stCheckbox input[type="checkbox"]:checked {
+        background-color: #2563eb;
+        border-color: #2563eb;
+    }
+    
+    /* Selectbox - Blue Theme */
+    .stSelectbox > div > div {
+        background-color: #ffffff;
+        border: 2px solid #dbeafe;
+        border-radius: 8px;
+    }
+    
+    /* Expander - Blue Theme */
+    .streamlit-expanderHeader {
+        background-color: #eff6ff;
+        color: #1e40af;
+        border-radius: 8px;
+        padding: 0.75rem;
+        font-weight: 600;
+    }
+    .streamlit-expanderHeader:hover {
+        background-color: #dbeafe;
+    }
+    
+    /* Dataframe - White Background */
+    .stDataFrame {
+        background-color: #ffffff;
+        border: 1px solid #dbeafe;
+        border-radius: 8px;
+    }
+    
+    /* Metric Cards - Blue Theme */
+    [data-testid="stMetricValue"] {
+        color: #1e40af;
+        font-weight: 700;
+    }
+    [data-testid="stMetricLabel"] {
+        color: #3b82f6;
+    }
+    
+    /* Divider - Blue */
+    hr {
+        border-color: #dbeafe;
+        margin: 1.5rem 0;
+    }
+    
     /* Logo container */
     [data-testid="stImage"] {
         margin-bottom: 0.5rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(30, 58, 138, 0.1);
     }
+    
     /* Compact form elements */
     .element-container {
         margin-bottom: 0.5rem;
+    }
+    
+    /* Text - Blue accents */
+    .stMarkdown {
+        color: #1f2937;
+    }
+    .stMarkdown strong {
+        color: #1e40af;
+    }
+    
+    /* Caption - Light Blue */
+    .stCaption {
+        color: #60a5fa;
     }
 </style>
 """, unsafe_allow_html=True)
