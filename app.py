@@ -1214,12 +1214,23 @@ def admin_check_fields_management():
     st.write("Manage check fields for Exterior, Engine, Safety, and Interior categories.")
     
     try:
-        categories = ["Exterior", "Engine", "Safety", "Interior"]
-        selected_category = st.selectbox("Select Category", categories, key="check_field_category")
+        # Category mapping: Display name -> Sheet name
+        category_mapping = {
+            "Exterior": "ExteriorChecks",
+            "Engine": "EngineChecks",
+            "Safety": "SafetyEquipment",
+            "Interior": "InteriorChecks"
+        }
         
-        check_fields = load_check_fields(selected_category)
+        categories = list(category_mapping.keys())
+        selected_category_display = st.selectbox("Select Category", categories, key="check_field_category")
         
-        st.metric(f"{selected_category} Check Fields", len(check_fields))
+        # Get the actual sheet name
+        selected_category_sheet = category_mapping[selected_category_display]
+        
+        check_fields = load_check_fields(selected_category_sheet)
+        
+        st.metric(f"{selected_category_display} Check Fields", len(check_fields))
         
         action = st.radio(
             "Select Action",
@@ -1231,14 +1242,14 @@ def admin_check_fields_management():
         
         if action == "View Fields":
             if not check_fields:
-                st.info(f"📭 No {selected_category.lower()} check fields found.")
+                st.info(f"📭 No {selected_category_display.lower()} check fields found.")
             else:
                 import pandas as pd
-                df = pd.DataFrame({f"{selected_category} Field": check_fields})
+                df = pd.DataFrame({f"{selected_category_display} Field": check_fields})
                 st.dataframe(df, width='stretch', height=300)
         
         elif action == "Add Field":
-            st.subheader(f"➕ Add New {selected_category} Field")
+            st.subheader(f"➕ Add New {selected_category_display} Field")
             with st.form("add_check_field_form"):
                 new_field = st.text_input("Field Name *", key="add_check_field")
                 submitted = st.form_submit_button("Add Field", width='stretch')
@@ -1249,7 +1260,7 @@ def admin_check_fields_management():
                     elif new_field in check_fields:
                         st.error(f"❌ Field '{new_field}' already exists!")
                     else:
-                        if add_check_field(selected_category, new_field):
+                        if add_check_field(selected_category_sheet, new_field):
                             st.session_state.admin_message = f"✅ Field '{new_field}' added successfully!"
                             st.session_state.admin_message_type = "success"
                             st.rerun()
@@ -1259,9 +1270,9 @@ def admin_check_fields_management():
                             st.rerun()
         
         elif action == "Edit Field":
-            st.subheader(f"✏️ Edit {selected_category} Field")
+            st.subheader(f"✏️ Edit {selected_category_display} Field")
             if not check_fields:
-                st.info(f"📭 No {selected_category.lower()} fields to edit.")
+                st.info(f"📭 No {selected_category_display.lower()} fields to edit.")
             else:
                 selected_field = st.selectbox(
                     "Select Field to Edit",
@@ -1284,7 +1295,7 @@ def admin_check_fields_management():
                             elif new_field != selected_field and new_field in check_fields:
                                 st.error(f"❌ Field '{new_field}' already exists!")
                             else:
-                                if update_check_field(selected_category, selected_field, new_field):
+                                if update_check_field(selected_category_sheet, selected_field, new_field):
                                     st.session_state.admin_message = "✅ Field updated successfully!"
                                     st.session_state.admin_message_type = "success"
                                     st.rerun()
@@ -1294,9 +1305,9 @@ def admin_check_fields_management():
                                     st.rerun()
         
         elif action == "Delete Field":
-            st.subheader(f"🗑️ Delete {selected_category} Field")
+            st.subheader(f"🗑️ Delete {selected_category_display} Field")
             if not check_fields:
-                st.info(f"📭 No {selected_category.lower()} fields to delete.")
+                st.info(f"📭 No {selected_category_display.lower()} fields to delete.")
             else:
                 selected_field = st.selectbox(
                     "Select Field to Delete",
@@ -1308,7 +1319,7 @@ def admin_check_fields_management():
                     st.warning(f"⚠️ You are about to delete field: **{selected_field}**")
                     
                     if st.button("🗑️ Confirm Delete", type="primary", width='stretch'):
-                        if delete_check_field(selected_category, selected_field):
+                        if delete_check_field(selected_category_sheet, selected_field):
                             st.session_state.admin_message = f"✅ Field '{selected_field}' deleted successfully!"
                             st.session_state.admin_message_type = "success"
                             st.rerun()
