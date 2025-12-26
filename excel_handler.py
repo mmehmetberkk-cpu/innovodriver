@@ -180,9 +180,9 @@ def create_default_excel():
     
     # Users sheet
     ws_users = wb.create_sheet("Users")
-    ws_users.append(["Username", "Password", "Full Name", "Admin"])
-    ws_users.append(["innovodriver", "123456", "Mehmet Berk", "No"])
-    ws_users.append(["admin", "admin123", "Admin User", "Yes"])
+    ws_users.append(["Username", "Password", "Full Name", "Email", "Admin"])
+    ws_users.append(["innovodriver", "123456", "Mehmet Berk", "mehmet.berk@example.com", "No"])
+    ws_users.append(["admin", "admin123", "Admin User", "admin@example.com", "Yes"])
     
     wb.save(EXCEL_FILE)
     return wb
@@ -340,7 +340,8 @@ def load_users():
                     if row and len(row) >= 3 and row[0] and row[1] and row[2]:
                         users[row[0]] = {
                             "password": row[1],
-                            "full_name": row[2]
+                            "full_name": row[2],
+                            "email": row[3] if len(row) > 3 and row[3] else ""
                         }
                         _log("A", "excel_handler.py:load_users:user_added", "User added to dict", {"username": row[0]})
                 
@@ -364,7 +365,8 @@ def load_users():
         if row[0] and row[1] and row[2]:
             users[row[0]] = {
                 "password": row[1],
-                "full_name": row[2]
+                "full_name": row[2],
+                "email": row[3] if len(row) > 3 and row[3] else ""
             }
             _log("A", "excel_handler.py:load_users:user_added", "User added to dict", {"username": row[0]})
     
@@ -375,15 +377,69 @@ def add_vehicle(vehicle_name):
     """Yeni araç ekler"""
     wb = get_excel_file()
     ws = wb["Vehicles"]
+    # Aynı isimde araç var mı kontrol et
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        if row and row[0] == vehicle_name:
+            return False
     ws.append([vehicle_name])
     wb.save(EXCEL_FILE)
+    return True
+
+def delete_vehicle(vehicle_name):
+    """Aracı siler"""
+    wb = get_excel_file()
+    ws = wb["Vehicles"]
+    for row_idx in range(2, ws.max_row + 1):
+        if ws.cell(row=row_idx, column=1).value == vehicle_name:
+            ws.delete_rows(row_idx)
+            wb.save(EXCEL_FILE)
+            return True
+    return False
+
+def update_vehicle(old_name, new_name):
+    """Araç adını günceller"""
+    wb = get_excel_file()
+    ws = wb["Vehicles"]
+    for row_idx in range(2, ws.max_row + 1):
+        if ws.cell(row=row_idx, column=1).value == old_name:
+            ws.cell(row=row_idx, column=1, value=new_name)
+            wb.save(EXCEL_FILE)
+            return True
+    return False
 
 def add_fuel_level(level):
     """Yeni yakıt seviyesi ekler"""
     wb = get_excel_file()
     ws = wb["FuelLevels"]
+    # Aynı seviye var mı kontrol et
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        if row and row[0] == level:
+            return False
     ws.append([level])
     wb.save(EXCEL_FILE)
+    return True
+
+def delete_fuel_level(level):
+    """Yakıt seviyesini siler"""
+    wb = get_excel_file()
+    ws = wb["FuelLevels"]
+    for row_idx in range(2, ws.max_row + 1):
+        if ws.cell(row=row_idx, column=1).value == level:
+            ws.delete_rows(row_idx)
+            wb.save(EXCEL_FILE)
+            return True
+    return False
+
+def update_fuel_level(old_level, new_level):
+    """Yakıt seviyesini günceller"""
+    wb = get_excel_file()
+    ws = wb["FuelLevels"]
+    for row_idx in range(2, ws.max_row + 1):
+        if ws.cell(row=row_idx, column=1).value == old_level:
+            ws.cell(row=row_idx, column=1, value=new_level)
+            wb.save(EXCEL_FILE)
+            return True
+    return False
 
 def add_check_field(category, field_name):
     """Yeni kontrol alanı ekler"""
@@ -394,35 +450,249 @@ def add_check_field(category, field_name):
         ws.append(["Field"])
     else:
         ws = wb[category]
+    # Aynı alan var mı kontrol et
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        if row and row[0] == field_name:
+            return False
     ws.append([field_name])
     wb.save(EXCEL_FILE)
+    return True
+
+def delete_check_field(category, field_name):
+    """Kontrol alanını siler"""
+    wb = get_excel_file()
+    if category not in wb.sheetnames:
+        return False
+    ws = wb[category]
+    for row_idx in range(2, ws.max_row + 1):
+        if ws.cell(row=row_idx, column=1).value == field_name:
+            ws.delete_rows(row_idx)
+            wb.save(EXCEL_FILE)
+            return True
+    return False
+
+def update_check_field(category, old_name, new_name):
+    """Kontrol alanını günceller"""
+    wb = get_excel_file()
+    if category not in wb.sheetnames:
+        return False
+    ws = wb[category]
+    for row_idx in range(2, ws.max_row + 1):
+        if ws.cell(row=row_idx, column=1).value == old_name:
+            ws.cell(row=row_idx, column=1, value=new_name)
+            wb.save(EXCEL_FILE)
+            return True
+    return False
 
 def add_item(item_name):
     """Yeni eşya ekler"""
     wb = get_excel_file()
     ws = wb["Items"]
+    # Aynı eşya var mı kontrol et
+    for row in ws.iter_rows(min_row=2, values_only=True):
+        if row and row[0] == item_name:
+            return False
     ws.append([item_name])
     wb.save(EXCEL_FILE)
+    return True
 
-def add_user(username, password, full_name, is_admin_user=False):
+def delete_item(item_name):
+    """Eşyayı siler"""
+    wb = get_excel_file()
+    ws = wb["Items"]
+    for row_idx in range(2, ws.max_row + 1):
+        if ws.cell(row=row_idx, column=1).value == item_name:
+            ws.delete_rows(row_idx)
+            wb.save(EXCEL_FILE)
+            return True
+    return False
+
+def update_item(old_name, new_name):
+    """Eşya adını günceller"""
+    wb = get_excel_file()
+    ws = wb["Items"]
+    for row_idx in range(2, ws.max_row + 1):
+        if ws.cell(row=row_idx, column=1).value == old_name:
+            ws.cell(row=row_idx, column=1, value=new_name)
+            wb.save(EXCEL_FILE)
+            return True
+    return False
+
+def add_user(username, password, full_name, email="", is_admin_user=False):
     """Yeni kullanıcı ekler"""
+    # Google Sheets kullanılıyorsa
+    if USE_GOOGLE_SHEETS:
+        client = get_google_sheets_client()
+        if client:
+            try:
+                sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("Users")
+                all_values = sheet.get_all_values()
+                
+                # Başlık kontrolü
+                if not all_values:
+                    sheet.append_row(["Username", "Password", "Full Name", "Email", "Admin"])
+                
+                # Kullanıcı zaten var mı kontrol et
+                for row in all_values[1:]:
+                    if row and row[0] == username:
+                        return False
+                
+                # Yeni kullanıcı ekle
+                sheet.append_row([username, password, full_name, email, "Yes" if is_admin_user else "No"])
+                return True
+            except Exception as e:
+                _log("E", "excel_handler.py:add_user:google_sheets", "Failed to add user to Google Sheets", {"error": str(e)})
+                return False
+    
+    # Excel'e ekle
     wb = get_excel_file()
     ws = wb["Users"]
     
-    # Başlık satırını kontrol et ve Admin kolonu ekle
+    # Başlık satırını kontrol et ve gerekli kolonları ekle
     headers = [cell.value for cell in ws[1]]
+    if "Email" not in headers:
+        ws.cell(row=1, column=len(headers) + 1, value="Email")
+        headers.append("Email")
     if "Admin" not in headers:
-        # Admin kolonunu başlığa ekle
         ws.cell(row=1, column=len(headers) + 1, value="Admin")
         headers.append("Admin")
     
+    # Kullanıcı zaten var mı kontrol et
+    for row_idx in range(2, ws.max_row + 1):
+        if ws.cell(row=row_idx, column=1).value == username:
+            return False
+    
     # Yeni satır ekle
-    new_row = [username, password, full_name, "Yes" if is_admin_user else "No"]
+    username_col = 1
+    password_col = 2
+    full_name_col = 3
+    email_col = headers.index("Email") + 1 if "Email" in headers else 4
+    admin_col = headers.index("Admin") + 1 if "Admin" in headers else 5
+    
+    new_row = [None] * max(username_col, password_col, full_name_col, email_col, admin_col)
+    new_row[username_col - 1] = username
+    new_row[password_col - 1] = password
+    new_row[full_name_col - 1] = full_name
+    if email_col <= len(new_row):
+        new_row[email_col - 1] = email
+    if admin_col <= len(new_row):
+        new_row[admin_col - 1] = "Yes" if is_admin_user else "No"
+    
     ws.append(new_row)
     wb.save(EXCEL_FILE)
+    return True
+
+def delete_user(username):
+    """Kullanıcıyı siler"""
+    # Google Sheets kullanılıyorsa
+    if USE_GOOGLE_SHEETS:
+        client = get_google_sheets_client()
+        if client:
+            try:
+                sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("Users")
+                all_values = sheet.get_all_values()
+                
+                if not all_values or len(all_values) < 2:
+                    return False
+                
+                # Kullanıcıyı bul ve sil
+                for i, row in enumerate(all_values[1:], start=2):
+                    if row and row[0] == username:
+                        sheet.delete_rows(i)
+                        return True
+                
+                return False
+            except Exception as e:
+                _log("E", "excel_handler.py:delete_user:google_sheets", "Failed to delete user from Google Sheets", {"error": str(e)})
+                return False
+    
+    # Excel'den sil
+    try:
+        wb = get_excel_file()
+        ws = wb["Users"]
+        
+        # Kullanıcıyı bul ve sil
+        for row_idx in range(2, ws.max_row + 1):
+            if ws.cell(row=row_idx, column=1).value == username:
+                ws.delete_rows(row_idx)
+                wb.save(EXCEL_FILE)
+                return True
+        
+        return False
+    except Exception as e:
+        _log("E", "excel_handler.py:delete_user", "Failed to delete user", {"error": str(e)})
+        return False
+
+def update_user(username, password=None, full_name=None, email=None, is_admin=None):
+    """Kullanıcı bilgilerini günceller"""
+    # Google Sheets kullanılıyorsa
+    if USE_GOOGLE_SHEETS:
+        client = get_google_sheets_client()
+        if client:
+            try:
+                sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("Users")
+                all_values = sheet.get_all_values()
+                
+                if not all_values or len(all_values) < 2:
+                    return False
+                
+                headers = all_values[0]
+                
+                # Kullanıcıyı bul ve güncelle
+                for i, row in enumerate(all_values[1:], start=2):
+                    if row and row[0] == username:
+                        if password is not None:
+                            pwd_col = headers.index("Password") + 1 if "Password" in headers else 2
+                            sheet.update_cell(i, pwd_col, password)
+                        if full_name is not None:
+                            name_col = headers.index("Full Name") + 1 if "Full Name" in headers else 3
+                            sheet.update_cell(i, name_col, full_name)
+                        if email is not None:
+                            email_col = headers.index("Email") + 1 if "Email" in headers else 4
+                            sheet.update_cell(i, email_col, email)
+                        if is_admin is not None:
+                            admin_col = headers.index("Admin") + 1 if "Admin" in headers else 5
+                            sheet.update_cell(i, admin_col, "Yes" if is_admin else "No")
+                        return True
+                
+                return False
+            except Exception as e:
+                _log("E", "excel_handler.py:update_user:google_sheets", "Failed to update user in Google Sheets", {"error": str(e)})
+                return False
+    
+    # Excel'den güncelle
+    try:
+        wb = get_excel_file()
+        ws = wb["Users"]
+        
+        headers = [cell.value for cell in ws[1]]
+        
+        # Kullanıcıyı bul ve güncelle
+        for row_idx in range(2, ws.max_row + 1):
+            if ws.cell(row=row_idx, column=1).value == username:
+                if password is not None:
+                    pwd_col = headers.index("Password") + 1 if "Password" in headers else 2
+                    ws.cell(row=row_idx, column=pwd_col, value=password)
+                if full_name is not None:
+                    name_col = headers.index("Full Name") + 1 if "Full Name" in headers else 3
+                    ws.cell(row=row_idx, column=name_col, value=full_name)
+                if email is not None:
+                    email_col = headers.index("Email") + 1 if "Email" in headers else 4
+                    ws.cell(row=row_idx, column=email_col, value=email)
+                if is_admin is not None:
+                    admin_col = headers.index("Admin") + 1 if "Admin" in headers else 5
+                    ws.cell(row=row_idx, column=admin_col, value="Yes" if is_admin else "No")
+                
+                wb.save(EXCEL_FILE)
+                return True
+        
+        return False
+    except Exception as e:
+        _log("E", "excel_handler.py:update_user", "Failed to update user", {"error": str(e)})
+        return False
 
 def update_excel_with_admin_column():
-    """Mevcut Excel dosyasına Admin kolonu ekler ve admin kullanıcısını ekler
+    """Mevcut Excel dosyasına Admin ve Email kolonlarını ekler ve admin kullanıcısını ekler
     Google Sheets kullanılıyorsa bu fonksiyon hiçbir şey yapmaz (Google Sheets'te manuel yapılmalı)
     """
     # Google Sheets kullanılıyorsa Excel işlemlerini atla
@@ -436,6 +706,19 @@ def update_excel_with_admin_column():
         
         # Başlık satırını kontrol et
         headers = [cell.value for cell in ws[1]]
+        
+        # Email kolonu yoksa ekle
+        if "Email" not in headers:
+            _log("D", "excel_handler.py:update_excel_with_admin_column", "Adding Email column to headers", {"current_headers": headers})
+            # Email kolonunu Full Name'den sonra ekle
+            email_col_idx = 4 if len(headers) >= 3 else len(headers) + 1
+            ws.insert_cols(email_col_idx)
+            ws.cell(row=1, column=email_col_idx, value="Email")
+            headers.insert(email_col_idx - 1, "Email")
+            
+            # Mevcut kullanıcılara boş email ekle
+            for row_idx in range(2, ws.max_row + 1):
+                ws.cell(row=row_idx, column=email_col_idx, value="")
         
         # Admin kolonu yoksa ekle
         if "Admin" not in headers:
@@ -457,7 +740,7 @@ def update_excel_with_admin_column():
         # Admin kullanıcısı yoksa ekle
         if not admin_exists:
             _log("D", "excel_handler.py:update_excel_with_admin_column", "Adding admin user", {})
-            ws.append(["admin", "admin123", "Admin User", "Yes"])
+            ws.append(["admin", "admin123", "Admin User", "admin@example.com", "Yes"])
         
         wb.save(EXCEL_FILE)
         _log("D", "excel_handler.py:update_excel_with_admin_column", "Excel updated successfully", {})
@@ -478,7 +761,7 @@ def _prepare_submission_row(form_data):
     headers = [
         "Timestamp", "Driver Name", "Vehicle", "Odometer Start", 
         "Fuel Level", "Oil Level", "Fuel Card", "Measuring Tape", 
-        "Safety Vest", "Fuel Amount"
+        "Safety Vest", "Fuel Amount", "Additional Comments"
     ]
     
     # Exterior checks başlıkları
@@ -512,7 +795,8 @@ def _prepare_submission_row(form_data):
         form_data.get("fuel_card", ""),
         form_data.get("measuring_tape", ""),
         form_data.get("safety_vest", ""),
-        form_data.get("fuel_amount", "")
+        form_data.get("fuel_amount", ""),
+        form_data.get("additional_comments", "")
     ]
     
     # Exterior checks değerleri
@@ -576,6 +860,7 @@ def save_form_submission_to_google_apps_script(form_data):
         flat_data["measuring_tape"] = form_data.get("measuring_tape", "")
         flat_data["safety_vest"] = form_data.get("safety_vest", "")
         flat_data["fuel_amount"] = form_data.get("fuel_amount", "")
+        flat_data["additional_comments"] = form_data.get("additional_comments", "")
         
         # Dosya yüklemeleri (şimdilik boş, gelecekte eklenebilir)
         flat_data["odometer_file"] = ""
@@ -805,4 +1090,255 @@ def is_admin(username):
     
     _log("B", "excel_handler.py:is_admin:user_not_found", "User not found or not admin", {"username": username, "user_found": user_found})
     return False
+
+# Şifre sıfırlama kodları için geçici dosya
+RESET_CODES_FILE = os.path.join(TEMP_DIR, "reset_codes.json")
+
+def get_user_by_email(email):
+    """E-posta adresine göre kullanıcı bilgilerini döndürür"""
+    users = load_users()
+    for username, user_data in users.items():
+        if user_data.get("email", "").lower() == email.lower():
+            return username, user_data
+    return None, None
+
+def verify_user_email(username, email):
+    """Kullanıcı adı ve e-posta kombinasyonunu doğrular"""
+    users = load_users()
+    user_data = users.get(username)
+    if user_data and user_data.get("email", "").lower() == email.lower():
+        return True, user_data
+    return False, None
+
+def generate_reset_code():
+    """6 haneli rastgele şifre sıfırlama kodu oluşturur"""
+    import random
+    return str(random.randint(100000, 999999))
+
+def save_reset_code(email, code, username):
+    """Şifre sıfırlama kodunu kaydeder (10 dakika geçerli)"""
+    import json
+    from datetime import datetime, timedelta
+    
+    codes = {}
+    if os.path.exists(RESET_CODES_FILE):
+        try:
+            with open(RESET_CODES_FILE, 'r', encoding='utf-8') as f:
+                codes = json.load(f)
+        except:
+            codes = {}
+    
+    # Eski kodları temizle
+    now = datetime.now()
+    codes = {k: v for k, v in codes.items() if datetime.fromisoformat(v['expires']) > now}
+    
+    # Yeni kodu ekle
+    expires = (now + timedelta(minutes=10)).isoformat()
+    codes[code] = {
+        'email': email.lower(),
+        'username': username,
+        'expires': expires
+    }
+    
+    with open(RESET_CODES_FILE, 'w', encoding='utf-8') as f:
+        json.dump(codes, f, ensure_ascii=False, indent=2)
+    
+    return True
+
+def verify_reset_code(code):
+    """Şifre sıfırlama kodunu doğrular ve kullanıcı bilgisini döndürür"""
+    import json
+    from datetime import datetime
+    
+    if not os.path.exists(RESET_CODES_FILE):
+        return None, None
+    
+    try:
+        with open(RESET_CODES_FILE, 'r', encoding='utf-8') as f:
+            codes = json.load(f)
+    except:
+        return None, None
+    
+    if code not in codes:
+        return None, None
+    
+    code_data = codes[code]
+    expires = datetime.fromisoformat(code_data['expires'])
+    
+    if datetime.now() > expires:
+        # Süresi dolmuş, kodu sil
+        del codes[code]
+        with open(RESET_CODES_FILE, 'w', encoding='utf-8') as f:
+            json.dump(codes, f, ensure_ascii=False, indent=2)
+        return None, None
+    
+    return code_data['username'], code_data['email']
+
+def send_reset_code_email(email, code):
+    """Şifre sıfırlama kodunu e-posta ile gönderir"""
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+    
+    # E-posta ayarları (Streamlit secrets'tan veya environment variable'dan)
+    smtp_server = get_secret("SMTP_SERVER", "smtp.gmail.com")
+    smtp_port = int(get_secret("SMTP_PORT", "587"))
+    smtp_username = get_secret("SMTP_USERNAME", "")
+    smtp_password = get_secret("SMTP_PASSWORD", "")
+    
+    # E-posta ayarları yoksa, konsola yazdır (geliştirme için)
+    if not smtp_username or not smtp_password:
+        # Windows konsolu encoding sorunu için ASCII-safe mesaj
+        print(f"[DEBUG] Reset code for {email}: {code}")
+        return True  # Geliştirme modunda başarılı say
+    
+    try:
+        # E-posta oluştur
+        msg = MIMEMultipart()
+        msg['From'] = smtp_username
+        msg['To'] = email
+        msg['Subject'] = "Şifre Sıfırlama Kodu - Araç Kontrol Formu"
+        
+        body = f"""
+Merhaba,
+
+Araç Kontrol Formu uygulaması için şifre sıfırlama talebiniz alınmıştır.
+
+Şifre sıfırlama kodunuz: {code}
+
+Bu kod 10 dakika süreyle geçerlidir.
+
+Eğer bu talebi siz yapmadıysanız, lütfen bu e-postayı görmezden gelin.
+
+İyi günler,
+Araç Kontrol Formu Ekibi
+        """
+        
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        
+        # E-posta gönder
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(smtp_username, smtp_password)
+        server.send_message(msg)
+        server.quit()
+        
+        return True
+    except Exception as e:
+        _log("E", "excel_handler.py:send_reset_code_email", "Failed to send email", {"error": str(e)})
+        # Hata olsa bile geliştirme modunda devam et
+        print(f"[DEBUG] Email could not be sent, code: {code}")
+        return True
+
+def update_user_password(username, new_password):
+    """Kullanıcı şifresini günceller"""
+    # Google Sheets kullanılıyorsa
+    if USE_GOOGLE_SHEETS:
+        client = get_google_sheets_client()
+        if client:
+            try:
+                sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("Users")
+                all_values = sheet.get_all_values()
+                
+                if not all_values or len(all_values) < 2:
+                    return False
+                
+                headers = all_values[0]
+                password_col_idx = headers.index("Password") if "Password" in headers else 1
+                
+                # Kullanıcıyı bul ve şifresini güncelle
+                for i, row in enumerate(all_values[1:], start=2):
+                    if row and row[0] == username:
+                        sheet.update_cell(i, password_col_idx + 1, new_password)
+                        return True
+                
+                return False
+            except Exception as e:
+                _log("E", "excel_handler.py:update_user_password:google_sheets", "Failed to update password in Google Sheets", {"error": str(e)})
+                return False
+    
+    # Excel'den güncelle
+    try:
+        wb = get_excel_file()
+        ws = wb["Users"]
+        
+        headers = [cell.value for cell in ws[1]]
+        password_col_idx = headers.index("Password") if "Password" in headers else 1
+        
+        # Kullanıcıyı bul ve şifresini güncelle
+        for row_idx in range(2, ws.max_row + 1):
+            if ws.cell(row=row_idx, column=1).value == username:
+                ws.cell(row=row_idx, column=password_col_idx + 1, value=new_password)
+                wb.save(EXCEL_FILE)
+                return True
+        
+        return False
+    except Exception as e:
+        _log("E", "excel_handler.py:update_user_password", "Failed to update password", {"error": str(e)})
+        return False
+
+def delete_reset_code(code):
+    """Kullanılan şifre sıfırlama kodunu siler"""
+    import json
+    
+    if not os.path.exists(RESET_CODES_FILE):
+        return
+    
+    try:
+        with open(RESET_CODES_FILE, 'r', encoding='utf-8') as f:
+            codes = json.load(f)
+        
+        if code in codes:
+            del codes[code]
+            with open(RESET_CODES_FILE, 'w', encoding='utf-8') as f:
+                json.dump(codes, f, ensure_ascii=False, indent=2)
+    except:
+        pass
+
+def update_user_email(username, email):
+    """Kullanıcının e-posta adresini günceller"""
+    # Google Sheets kullanılıyorsa
+    if USE_GOOGLE_SHEETS:
+        client = get_google_sheets_client()
+        if client:
+            try:
+                sheet = client.open_by_key(GOOGLE_SHEET_ID).worksheet("Users")
+                all_values = sheet.get_all_values()
+                
+                if not all_values or len(all_values) < 2:
+                    return False
+                
+                headers = all_values[0]
+                email_col_idx = headers.index("Email") if "Email" in headers else 3
+                
+                # Kullanıcıyı bul ve e-postasını güncelle
+                for i, row in enumerate(all_values[1:], start=2):
+                    if row and row[0] == username:
+                        sheet.update_cell(i, email_col_idx + 1, email)
+                        return True
+                
+                return False
+            except Exception as e:
+                _log("E", "excel_handler.py:update_user_email:google_sheets", "Failed to update email in Google Sheets", {"error": str(e)})
+                return False
+    
+    # Excel'den güncelle
+    try:
+        wb = get_excel_file()
+        ws = wb["Users"]
+        
+        headers = [cell.value for cell in ws[1]]
+        email_col_idx = headers.index("Email") if "Email" in headers else 3
+        
+        # Kullanıcıyı bul ve e-postasını güncelle
+        for row_idx in range(2, ws.max_row + 1):
+            if ws.cell(row=row_idx, column=1).value == username:
+                ws.cell(row=row_idx, column=email_col_idx + 1, value=email)
+                wb.save(EXCEL_FILE)
+                return True
+        
+        return False
+    except Exception as e:
+        _log("E", "excel_handler.py:update_user_email", "Failed to update email", {"error": str(e)})
+        return False
 
