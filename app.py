@@ -463,12 +463,12 @@ def login_page():
     _log("C", "app.py:login_page:before_load_users", "About to load users", {})
     # #endregion agent log
     try:
-    users = load_users()
-    # #region agent log
-    _log("C", "app.py:login_page:after_load_users", "Users loaded", {"user_count": len(users), "usernames": list(users.keys())})
-    # #endregion agent log
+        users = load_users()
+        # #region agent log
+        _log("C", "app.py:login_page:after_load_users", "Users loaded", {"user_count": len(users), "usernames": list(users.keys())})
+        # #endregion agent log
         
-        # Kullanıcı yoksa uyarı göster
+        # Show warning if no users found
         if not users:
             st.warning("⚠️ No users found. Please check your data source (Excel file or Google Sheets).")
             st.info("💡 If using Excel, make sure `form_data.xlsx` exists. If using Google Sheets, check your credentials in Streamlit secrets.")
@@ -669,12 +669,12 @@ def form_page():
     st.markdown("#### 📋 Basic Information")
     
     # Vehicle selection - Outside form (for auto rerun)
-        vehicle_options = [""] + vehicles + ["Other"]
-        selected_vehicle = st.selectbox(
+    vehicle_options = [""] + vehicles + ["Other"]
+    selected_vehicle = st.selectbox(
         "Vehicle *",
-            options=vehicle_options,
-            key="vehicle_select"
-        )
+        options=vehicle_options,
+        key="vehicle_select"
+    )
         
     # Other Vehicle (conditional) - Outside form
     # Clear session state when "Other" is not selected
@@ -687,7 +687,7 @@ def form_page():
         st.info("ℹ️ **Manual Vehicle Entry:** Please enter the vehicle manually")
         # Get value from session state, or empty string
         current_value = st.session_state.get("other_vehicle_input", "")
-            other_vehicle = st.text_input(
+        other_vehicle = st.text_input(
             "Vehicle Information *",
             placeholder="e.g., FORD Transit 2020",
             key="other_vehicle_input",
@@ -724,13 +724,13 @@ def form_page():
         )
         
         with col2:
-        # Fuel Level
-        fuel_options = [""] + fuel_levels
-        fuel_level = st.selectbox(
+            # Fuel Level
+            fuel_options = [""] + fuel_levels
+            fuel_level = st.selectbox(
                 "⛽ Fuel Level",
-            options=fuel_options,
-            key="fuel_level_select"
-        )
+                options=fuel_options,
+                key="fuel_level_select"
+            )
         
             # Other Fuel (conditional)
         other_fuel = None
@@ -953,7 +953,7 @@ def admin_panel():
                 type="primary" if st.session_state.admin_section == section_key else "secondary"
             ):
                 st.session_state.admin_section = section_key
-                st.rerun()
+            st.rerun()
 
         st.markdown("---")
         st.caption(f"👤 {st.session_state.full_name}")
@@ -992,8 +992,8 @@ def admin_panel():
 
 def admin_form_submissions():
     """Form gönderimlerini görüntüleme"""
-        st.subheader("📋 Form Submissions")
-        st.write("View and manage all form submissions.")
+    st.subheader("📋 Form Submissions")
+    st.write("View and manage all form submissions.")
     
     try:
         submissions = load_form_submissions()
@@ -1734,18 +1734,18 @@ def main():
                         type="primary" if st.session_state.current_page == "form" else "secondary"):
                 st.session_state.current_page = "form"
                 st.rerun()
-            
-            if st.session_state.is_admin:
+        
+        if st.session_state.is_admin:
             col_idx += 1
             with menu_cols[col_idx]:
                 if st.button("👨‍💼 Admin", width='stretch',
                             type="primary" if st.session_state.current_page == "admin" else "secondary"):
                     st.session_state.current_page = "admin"
                     st.rerun()
-            
+        
         col_idx += 1
         with menu_cols[col_idx]:
-            if st.button("🚪", width='stretch', help="Çıkış Yap"):
+            if st.button("🚪", width='stretch', help="Logout"):
                 st.session_state.logged_in = False
                 st.session_state.username = None
                 st.session_state.full_name = None
