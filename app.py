@@ -365,7 +365,7 @@ if 'admin_section' not in st.session_state:
 def thank_you_page():
     """Thank you page after form submission"""
     try:
-        st.image("Innovo.PNG", width=200, use_container_width=False)
+        st.image("Innovo.PNG", width=200)
     except:
         pass
     
@@ -395,7 +395,7 @@ def thank_you_page():
     
     st.markdown("---")
     
-    if st.button("📝 Submit Another Form", use_container_width=True, type="primary"):
+    if st.button("📝 Submit Another Form", width='stretch', type="primary"):
         st.session_state.form_submitted = False
         st.session_state.submitted_form_data = None
         st.rerun()
@@ -432,9 +432,9 @@ def login_page():
         password = st.text_input("Password", type="password", key="login_password")
         col1, col2 = st.columns(2)
         with col1:
-            submit_button = st.form_submit_button("Login", use_container_width=True)
+            submit_button = st.form_submit_button("Login", width='stretch')
         with col2:
-            reset_button = st.form_submit_button("🔑 Reset", use_container_width=True)
+            reset_button = st.form_submit_button("🔑 Reset", width='stretch')
         
         if reset_button:
             st.session_state.current_page = "reset_password"
@@ -476,7 +476,7 @@ def login_page():
 def reset_password_page():
     """Password reset page - Email entry"""
     try:
-        st.image("Innovo.PNG", width=150, use_container_width=False)
+        st.image("Innovo.PNG", width=150)
     except:
         pass
     
@@ -489,7 +489,7 @@ def reset_password_page():
         
         with st.form("reset_email_form"):
             email = st.text_input("Email Address", key="reset_email_input", placeholder="example@email.com")
-            submit_button = st.form_submit_button("Send Code", use_container_width=True)
+            submit_button = st.form_submit_button("Send Code", width='stretch')
             
             if submit_button:
                 if email:
@@ -515,7 +515,7 @@ def reset_password_page():
                     st.warning("⚠️ Please enter your email address!")
         
         # Back button
-        if st.button("⬅️ Back to Login", use_container_width=True):
+        if st.button("⬅️ Back to Login", width='stretch'):
             st.session_state.current_page = "login"
             st.session_state.reset_email = None
             st.rerun()
@@ -528,7 +528,7 @@ def reset_password_page():
             entered_code = st.text_input("Reset Code", key="reset_code_input", placeholder="6-digit code")
             new_password = st.text_input("New Password", type="password", key="new_password_input")
             confirm_password = st.text_input("Confirm Password", type="password", key="confirm_password_input")
-            submit_button = st.form_submit_button("Update Password", use_container_width=True)
+            submit_button = st.form_submit_button("Update Password", width='stretch')
             
             if submit_button:
                 if not entered_code:
@@ -554,7 +554,7 @@ def reset_password_page():
                             st.success("✅ Your password has been updated successfully!")
                             st.info("🔐 You can now login with your new password.")
                             
-                            if st.button("⬅️ Back to Login", use_container_width=True):
+                            if st.button("⬅️ Back to Login", width='stretch'):
                                 st.session_state.current_page = "login"
                                 st.rerun()
                         else:
@@ -563,7 +563,7 @@ def reset_password_page():
                         st.error("❌ Invalid or expired code!")
         
         # Resend code
-        if st.button("🔄 Resend Code", use_container_width=True):
+        if st.button("🔄 Resend Code", width='stretch'):
             code = generate_reset_code()
             save_reset_code(st.session_state.reset_email, code, st.session_state.reset_username)
             send_reset_code_email(st.session_state.reset_email, code)
@@ -572,7 +572,7 @@ def reset_password_page():
             st.rerun()
         
         # Cancel button
-        if st.button("❌ Cancel", use_container_width=True):
+        if st.button("❌ Cancel", width='stretch'):
             st.session_state.reset_email = None
             st.session_state.reset_code = None
             st.session_state.reset_username = None
@@ -591,7 +591,7 @@ def form_page():
         # Center logo
         col1, col2, col3 = st.columns([1, 2, 1])
         with col2:
-            st.image("Innovo.PNG", use_container_width=True)
+            st.image("Innovo.PNG", width='stretch')
         st.markdown("### 🚗 Vehicle Inspection")
         st.caption(f"👤 Driver: {st.session_state.full_name}")
     except:
@@ -820,7 +820,7 @@ def form_page():
         # Large, touch-friendly submit button
         submit_button = st.form_submit_button(
             "✅ SUBMIT FORM",
-            use_container_width=True,
+            width='stretch',
             type="primary"
         )
         
@@ -893,7 +893,7 @@ def admin_panel():
             if st.button(
                 menu_text,
                 key=f"admin_menu_{section_key}",
-                use_container_width=True,
+                width='stretch',
                 type="primary" if st.session_state.admin_section == section_key else "secondary"
             ):
                 st.session_state.admin_section = section_key
@@ -995,7 +995,7 @@ def admin_form_submissions():
             # Tablo görünümü
             import pandas as pd
             df = pd.DataFrame(filtered_submissions)
-            st.dataframe(df, use_container_width=True, height=400)
+            st.dataframe(df, width='stretch', height=400)
             
             # CSV indirme
             csv = df.to_csv(index=False).encode('utf-8-sig')
@@ -1114,7 +1114,7 @@ def admin_user_management():
                     })
                 
                 df = pd.DataFrame(user_list)
-                st.dataframe(df, use_container_width=True, height=300)
+                st.dataframe(df, width='stretch', height=300)
         
         elif action == "Add User":
             st.subheader("➕ Add New User")
@@ -1125,7 +1125,7 @@ def admin_user_management():
                 new_email = st.text_input("Email", key="add_email")
                 is_admin_user = st.checkbox("Admin User", key="add_is_admin")
                 
-                submitted = st.form_submit_button("Add User", use_container_width=True)
+                submitted = st.form_submit_button("Add User", width='stretch')
                 
                 if submitted:
                     if not new_username or not new_password or not new_full_name:
@@ -1180,7 +1180,7 @@ def admin_user_management():
                             key="edit_is_admin"
                         )
                         
-                        submitted = st.form_submit_button("Update User", use_container_width=True)
+                        submitted = st.form_submit_button("Update User", width='stretch')
                         
                         if submitted:
                             password = new_password if new_password else None
@@ -1216,7 +1216,7 @@ def admin_user_management():
                     st.write(f"**Full Name:** {user_data.get('full_name', 'N/A')}")
                     st.write(f"**Email:** {user_data.get('email', 'N/A')}")
                     
-                    if st.button("🗑️ Confirm Delete", type="primary", use_container_width=True):
+                    if st.button("🗑️ Confirm Delete", type="primary", width='stretch'):
                         if delete_user(selected_username):
                             st.session_state.admin_message = f"✅ User '{selected_username}' deleted successfully!"
                             st.session_state.admin_message_type = "success"
@@ -1253,13 +1253,13 @@ def admin_vehicle_management():
             else:
                 import pandas as pd
                 df = pd.DataFrame({"Vehicle": vehicles})
-                st.dataframe(df, use_container_width=True, height=300)
+                st.dataframe(df, width='stretch', height=300)
         
         elif action == "Add Vehicle":
             st.subheader("➕ Add New Vehicle")
             with st.form("add_vehicle_form"):
                 new_vehicle = st.text_input("Vehicle Name *", key="add_vehicle")
-                submitted = st.form_submit_button("Add Vehicle", use_container_width=True)
+                submitted = st.form_submit_button("Add Vehicle", width='stretch')
                 
                 if submitted:
                     if not new_vehicle:
@@ -1294,7 +1294,7 @@ def admin_vehicle_management():
                             value=selected_vehicle,
                             key="edit_vehicle_name"
                         )
-                        submitted = st.form_submit_button("Update Vehicle", use_container_width=True)
+                        submitted = st.form_submit_button("Update Vehicle", width='stretch')
                         
                         if submitted:
                             if not new_name:
@@ -1325,7 +1325,7 @@ def admin_vehicle_management():
                 if selected_vehicle:
                     st.warning(f"⚠️ You are about to delete vehicle: **{selected_vehicle}**")
                     
-                    if st.button("🗑️ Confirm Delete", type="primary", use_container_width=True):
+                    if st.button("🗑️ Confirm Delete", type="primary", width='stretch'):
                         if delete_vehicle(selected_vehicle):
                             st.session_state.admin_message = f"✅ Vehicle '{selected_vehicle}' deleted successfully!"
                             st.session_state.admin_message_type = "success"
@@ -1362,13 +1362,13 @@ def admin_fuel_level_management():
             else:
                 import pandas as pd
                 df = pd.DataFrame({"Fuel Level": fuel_levels})
-                st.dataframe(df, use_container_width=True, height=300)
+                st.dataframe(df, width='stretch', height=300)
         
         elif action == "Add Fuel Level":
             st.subheader("➕ Add New Fuel Level")
             with st.form("add_fuel_level_form"):
                 new_level = st.text_input("Fuel Level *", key="add_fuel_level")
-                submitted = st.form_submit_button("Add Fuel Level", use_container_width=True)
+                submitted = st.form_submit_button("Add Fuel Level", width='stretch')
                 
                 if submitted:
                     if not new_level:
@@ -1403,7 +1403,7 @@ def admin_fuel_level_management():
                             value=selected_level,
                             key="edit_fuel_level_name"
                         )
-                        submitted = st.form_submit_button("Update Fuel Level", use_container_width=True)
+                        submitted = st.form_submit_button("Update Fuel Level", width='stretch')
                         
                         if submitted:
                             if not new_level:
@@ -1434,7 +1434,7 @@ def admin_fuel_level_management():
                 if selected_level:
                     st.warning(f"⚠️ You are about to delete fuel level: **{selected_level}**")
                     
-                    if st.button("🗑️ Confirm Delete", type="primary", use_container_width=True):
+                    if st.button("🗑️ Confirm Delete", type="primary", width='stretch'):
                         if delete_fuel_level(selected_level):
                             st.session_state.admin_message = f"✅ Fuel level '{selected_level}' deleted successfully!"
                             st.session_state.admin_message_type = "success"
@@ -1474,13 +1474,13 @@ def admin_check_fields_management():
             else:
                 import pandas as pd
                 df = pd.DataFrame({f"{selected_category} Field": check_fields})
-                st.dataframe(df, use_container_width=True, height=300)
+                st.dataframe(df, width='stretch', height=300)
         
         elif action == "Add Field":
             st.subheader(f"➕ Add New {selected_category} Field")
             with st.form("add_check_field_form"):
                 new_field = st.text_input("Field Name *", key="add_check_field")
-                submitted = st.form_submit_button("Add Field", use_container_width=True)
+                submitted = st.form_submit_button("Add Field", width='stretch')
                 
                 if submitted:
                     if not new_field:
@@ -1515,7 +1515,7 @@ def admin_check_fields_management():
                             value=selected_field,
                             key="edit_check_field_name"
                         )
-                        submitted = st.form_submit_button("Update Field", use_container_width=True)
+                        submitted = st.form_submit_button("Update Field", width='stretch')
                         
                         if submitted:
                             if not new_field:
@@ -1546,7 +1546,7 @@ def admin_check_fields_management():
                 if selected_field:
                     st.warning(f"⚠️ You are about to delete field: **{selected_field}**")
                     
-                    if st.button("🗑️ Confirm Delete", type="primary", use_container_width=True):
+                    if st.button("🗑️ Confirm Delete", type="primary", width='stretch'):
                         if delete_check_field(selected_category, selected_field):
                             st.session_state.admin_message = f"✅ Field '{selected_field}' deleted successfully!"
                             st.session_state.admin_message_type = "success"
@@ -1583,13 +1583,13 @@ def admin_items_management():
             else:
                 import pandas as pd
                 df = pd.DataFrame({"Item": items})
-                st.dataframe(df, use_container_width=True, height=300)
+                st.dataframe(df, width='stretch', height=300)
         
         elif action == "Add Item":
             st.subheader("➕ Add New Item")
             with st.form("add_item_form"):
                 new_item = st.text_input("Item Name *", key="add_item")
-                submitted = st.form_submit_button("Add Item", use_container_width=True)
+                submitted = st.form_submit_button("Add Item", width='stretch')
                 
                 if submitted:
                     if not new_item:
@@ -1624,7 +1624,7 @@ def admin_items_management():
                             value=selected_item,
                             key="edit_item_name"
                         )
-                        submitted = st.form_submit_button("Update Item", use_container_width=True)
+                        submitted = st.form_submit_button("Update Item", width='stretch')
                         
                         if submitted:
                             if not new_name:
@@ -1655,7 +1655,7 @@ def admin_items_management():
                 if selected_item:
                     st.warning(f"⚠️ You are about to delete item: **{selected_item}**")
                     
-                    if st.button("🗑️ Confirm Delete", type="primary", use_container_width=True):
+                    if st.button("🗑️ Confirm Delete", type="primary", width='stretch'):
                         if delete_item(selected_item):
                             st.session_state.admin_message = f"✅ Item '{selected_item}' deleted successfully!"
                             st.session_state.admin_message_type = "success"
@@ -1677,7 +1677,7 @@ def main():
         col_idx = 0
         
         with menu_cols[col_idx]:
-            if st.button("📝 Form", use_container_width=True, 
+            if st.button("📝 Form", width='stretch', 
                         type="primary" if st.session_state.current_page == "form" else "secondary"):
                 st.session_state.current_page = "form"
                 st.rerun()
@@ -1685,14 +1685,14 @@ def main():
         if st.session_state.is_admin:
             col_idx += 1
             with menu_cols[col_idx]:
-                if st.button("👨‍💼 Admin", use_container_width=True,
+                if st.button("👨‍💼 Admin", width='stretch',
                             type="primary" if st.session_state.current_page == "admin" else "secondary"):
                     st.session_state.current_page = "admin"
                     st.rerun()
         
         col_idx += 1
         with menu_cols[col_idx]:
-            if st.button("🚪", use_container_width=True, help="Çıkış Yap"):
+            if st.button("🚪", width='stretch', help="Çıkış Yap"):
                 st.session_state.logged_in = False
                 st.session_state.username = None
                 st.session_state.full_name = None
