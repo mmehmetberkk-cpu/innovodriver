@@ -124,11 +124,9 @@ EXCEL_FILE_LOCAL = os.path.join(CURRENT_DIR, "form_data.xlsx")
 TEMP_DIR = tempfile.gettempdir()
 EXCEL_FILE_TEMP = os.path.join(TEMP_DIR, "form_data.xlsx")
 
-# Önce local'de ara, yoksa temp kullan
-if os.path.exists(EXCEL_FILE_LOCAL):
-    EXCEL_FILE = EXCEL_FILE_LOCAL
-else:
-    EXCEL_FILE = EXCEL_FILE_TEMP
+# Her zaman local dosyayı kullan (repository'deki dosya)
+# Streamlit Cloud'da da bu dosya kalıcı olacak
+EXCEL_FILE = EXCEL_FILE_LOCAL
 
 def create_default_excel():
     """Default değerlerle Excel dosyası oluşturur"""
@@ -200,21 +198,53 @@ def create_default_excel():
     return wb
 
 def get_excel_file():
-    """Excel dosyasını açar, yoksa oluşturur"""
+    """Excel dosyasını açar, yoksa oluşturur - Mevcut verileri korur"""
     # Google Sheets kullanılıyorsa Excel dosyasına gerek yok
     if USE_GOOGLE_SHEETS:
         # Yine de fallback için varsayılan Excel oluştur
         if not os.path.exists(EXCEL_FILE):
-            return create_default_excel()
+            wb = create_default_excel()
+            return wb
     
     if not os.path.exists(EXCEL_FILE):
-        return create_default_excel()
+        # Dosya yoksa oluştur
+        wb = create_default_excel()
+        return wb
     
     try:
-        return load_workbook(EXCEL_FILE)
+        wb = load_workbook(EXCEL_FILE)
+        # Dosya varsa mevcut verileri koru, sadece eksik sheet'leri ekle
+        required_sheets = ["Vehicles", "FuelLevels", "ExteriorChecks", "EngineChecks", 
+                          "SafetyEquipment", "InteriorChecks", "Items", "Users"]
+        modified = False
+        for sheet_name in required_sheets:
+            if sheet_name not in wb.sheetnames:
+                ws = wb.create_sheet(sheet_name)
+                if sheet_name == "Vehicles":
+                    ws.append(["Vehicle"])
+                elif sheet_name == "FuelLevels":
+                    ws.append(["Level"])
+                elif sheet_name in ["ExteriorChecks", "EngineChecks", "SafetyEquipment", "InteriorChecks"]:
+                    ws.append(["Field"])
+                elif sheet_name == "Items":
+                    ws.append(["Item"])
+                elif sheet_name == "Users":
+                    ws.append(["Username", "Password", "Full Name", "Email", "Admin"])
+                modified = True
+        if modified:
+            wb.save(EXCEL_FILE)
+        return wb
     except Exception as e:
-        # Dosya bozuksa yeniden oluştur
+        # Dosya bozuksa yeniden oluştur (son çare - mevcut veriler kaybolur)
         _log("E", "excel_handler.py:get_excel_file", "Excel file corrupted, recreating", {"error": str(e)})
+        try:
+            # Önce mevcut dosyayı yedekle
+            backup_file = EXCEL_FILE + ".backup"
+            if os.path.exists(EXCEL_FILE):
+                import shutil
+                shutil.copy2(EXCEL_FILE, backup_file)
+        except:
+            pass
         try:
             os.remove(EXCEL_FILE)
         except:
