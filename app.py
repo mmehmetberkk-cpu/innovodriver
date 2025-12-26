@@ -361,6 +361,8 @@ if 'admin_message_type' not in st.session_state:
     st.session_state.admin_message_type = None
 if 'admin_section' not in st.session_state:
     st.session_state.admin_section = "form_submissions"
+if 'show_welcome' not in st.session_state:
+    st.session_state.show_welcome = False
 
 def thank_you_page():
     """Thank you page after form submission"""
@@ -464,7 +466,8 @@ def login_page():
                 # #endregion agent log
                 st.session_state.is_admin = admin_status
                 st.session_state.current_page = "form"
-                st.success("Giriş başarılı!")
+                st.session_state.show_welcome = True  # Welcome message flag
+                st.success("✅ Login successful!")
                 st.rerun()
             else:
                 # #region agent log
@@ -585,6 +588,11 @@ def form_page():
     if st.session_state.form_submitted:
         thank_you_page()
         return
+    
+    # Welcome message (show once after login)
+    if st.session_state.get("show_welcome", False):
+        st.success(f"🎉 Welcome to InnovoExpress, {st.session_state.full_name}! We're glad to have you here.")
+        st.session_state.show_welcome = False  # Clear flag after showing
     
     # Logo and header - Centered and mobile-friendly
     try:
