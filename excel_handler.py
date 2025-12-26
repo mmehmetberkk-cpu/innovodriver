@@ -762,8 +762,12 @@ def update_excel_with_admin_column():
         # Bulut ortamında Excel dosyası olmayabilir, bu normal
         pass
 
-# Form gönderimleri için ayrı Excel dosyası - bulut ortamında geçici dizin
-SUBMISSIONS_FILE = os.path.join(TEMP_DIR, "form_submissions.xlsx")
+# Form gönderimleri için form_data.xlsx dosyasındaki Submissions sheet'i kullanılacak
+# Önce mevcut dizinde ara, yoksa geçici dizin kullan
+if os.path.exists(EXCEL_FILE_LOCAL):
+    SUBMISSIONS_FILE = EXCEL_FILE_LOCAL
+else:
+    SUBMISSIONS_FILE = EXCEL_FILE_TEMP
 
 def _prepare_submission_row(form_data):
     """Form verilerini Excel/Sheets satırına dönüştürür"""
@@ -957,23 +961,21 @@ def save_form_submission(form_data):
                 # #endregion agent log
                 pass  # Fallback to Excel
     
-    # Excel dosyasına kaydet (fallback veya varsayılan)
-    if os.path.exists(SUBMISSIONS_FILE):
-        wb = load_workbook(SUBMISSIONS_FILE)
-        if "Submissions" not in wb.sheetnames:
-            ws = wb.create_sheet("Submissions")
-            ws.append(headers)
-        else:
-            ws = wb["Submissions"]
-    else:
-        wb = Workbook()
-        if "Sheet" in wb.sheetnames:
-            wb.remove(wb["Sheet"])
+    # Excel dosyasına kaydet (form_data.xlsx içindeki Submissions sheet'ine)
+    wb = get_excel_file()
+    
+    # Submissions sheet'i yoksa oluştur
+    if "Submissions" not in wb.sheetnames:
         ws = wb.create_sheet("Submissions")
         ws.append(headers)
+    else:
+        ws = wb["Submissions"]
+        # Başlık satırı yoksa ekle
+        if ws.max_row == 0 or not any(ws.cell(row=1, column=col).value for col in range(1, len(headers) + 1)):
+            ws.append(headers)
     
     ws.append(row)
-    wb.save(SUBMISSIONS_FILE)
+    wb.save(EXCEL_FILE)
 
 def load_form_submissions():
     """Form gönderimlerini Excel'den veya Google Sheets'ten okur"""
@@ -1005,11 +1007,8 @@ def load_form_submissions():
                 # #endregion agent log
                 pass  # Fallback to Excel
     
-    # Excel dosyasından oku (fallback veya varsayılan)
-    if not os.path.exists(SUBMISSIONS_FILE):
-        return []
-    
-    wb = load_workbook(SUBMISSIONS_FILE)
+    # Excel dosyasından oku (form_data.xlsx içindeki Submissions sheet'inden)
+    wb = get_excel_file()
     if "Submissions" not in wb.sheetnames:
         return []
     
