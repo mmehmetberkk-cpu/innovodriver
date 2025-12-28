@@ -487,7 +487,7 @@ def form_page():
         st.info("ℹ️ **Manual Vehicle Entry:** Please enter the vehicle manually")
         # Get value from session state, or empty string
         current_value = st.session_state.get("other_vehicle_input", "")
-            other_vehicle = st.text_input(
+        other_vehicle = st.text_input(
             "Vehicle Information *",
             placeholder="e.g., FORD Transit 2020",
             key="other_vehicle_input",
