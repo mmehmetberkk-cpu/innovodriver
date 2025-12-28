@@ -853,6 +853,9 @@ def form_page():
             # Store form data for review
             st.session_state.form_data_for_review = form_data
             st.session_state.show_form_review = True
+            # Clear edit data after submission
+            if 'form_data_for_edit' in st.session_state:
+                del st.session_state.form_data_for_edit
             st.rerun()
 
 def admin_panel():
