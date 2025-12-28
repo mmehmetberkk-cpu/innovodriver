@@ -535,15 +535,17 @@ def form_page():
                 options=fuel_options,
                 key="fuel_level_select"
             )
-        
+            
             # Other Fuel (conditional)
-        if fuel_level == "Other":
-            other_fuel = st.text_input(
+            if fuel_level == "Other":
+                other_fuel = st.text_input(
                     "Fuel Level (Manual)",
                     placeholder="Enter manually",
-                key="other_fuel_input"
-            )
-        
+                    key="other_fuel_input"
+                )
+            else:
+                other_fuel = None
+            
             # Oil Level - Percentage list
             oil_level_options = ["", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%", "Other"]
             oil_level = st.selectbox(
