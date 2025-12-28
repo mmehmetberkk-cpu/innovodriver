@@ -232,7 +232,13 @@ def get_excel_file():
                     ws.append(["Username", "Password", "Full Name", "Email", "Admin"])
                 modified = True
         if modified:
-            wb.save(EXCEL_FILE)
+            try:
+                wb.save(EXCEL_FILE)
+            except (PermissionError, OSError) as e:
+                # Streamlit Cloud'da dosya sistemi read-only olabilir
+                # Bu durumda sadece okuma modunda devam et
+                _log("W", "excel_handler.py:get_excel_file", "Cannot save Excel file (read-only filesystem)", {"error": str(e)})
+                # Don't close the workbook, return it for read-only access
         return wb
     except Exception as e:
         # Dosya bozuksa yeniden oluştur (son çare - mevcut veriler kaybolur)
@@ -622,15 +628,51 @@ def add_user(username, password, full_name, email="", is_admin_user=False):
     
     ws.append(new_row)
     try:
+        # Try to save the file
         wb.save(EXCEL_FILE)
-        return True
-    except PermissionError:
+        
+        # Verify the save was successful by checking if file exists and is writable
+        if not os.path.exists(EXCEL_FILE):
+            _log("E", "excel_handler.py:add_user", "Excel file does not exist after save", {})
+            return False
+        
+        # Try to open and verify the user was added
+        try:
+            verify_wb = load_workbook(EXCEL_FILE)
+            verify_ws = verify_wb["Users"]
+            user_found = False
+            for row_idx in range(2, verify_ws.max_row + 1):
+                if verify_ws.cell(row=row_idx, column=1).value == username:
+                    user_found = True
+                    break
+            verify_wb.close()
+            
+            if not user_found:
+                _log("E", "excel_handler.py:add_user", "User was not found in Excel file after save", {"username": username})
+                return False
+            
+            _log("D", "excel_handler.py:add_user", "User successfully added and verified", {"username": username})
+            return True
+        except Exception as verify_e:
+            _log("W", "excel_handler.py:add_user", "Could not verify user save, but save appeared successful", {"error": str(verify_e)})
+            return True  # Assume success if we can't verify
+        
+    except PermissionError as pe:
         # Streamlit Cloud'da dosya sistemi read-only olabilir
-        # Bu durumda kullanıcı eklenemez, ama hata vermemeli
-        _log("W", "excel_handler.py:add_user", "Cannot save to Excel file (read-only filesystem)", {})
+        _log("E", "excel_handler.py:add_user", "Cannot save to Excel file (read-only filesystem or permission denied)", {"error": str(pe), "file": EXCEL_FILE})
+        wb.close()
+        return False
+    except OSError as ose:
+        # File system errors
+        _log("E", "excel_handler.py:add_user", "OS error while saving Excel file", {"error": str(ose), "file": EXCEL_FILE})
+        wb.close()
         return False
     except Exception as e:
-        _log("E", "excel_handler.py:add_user", "Failed to save user to Excel", {"error": str(e)})
+        _log("E", "excel_handler.py:add_user", "Failed to save user to Excel", {"error": str(e), "file": EXCEL_FILE})
+        try:
+            wb.close()
+        except:
+            pass
         return False
 
 def delete_user(username):

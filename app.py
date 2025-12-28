@@ -1119,12 +1119,19 @@ def admin_user_management():
                         if new_username in users:
                             st.error(f"❌ Username '{new_username}' already exists!")
                         else:
-                            if add_user(new_username, new_password, new_full_name, new_email, is_admin_user):
-                                st.session_state.admin_message = f"✅ User '{new_username}' added successfully!"
-                                st.session_state.admin_message_type = "success"
+                            result = add_user(new_username, new_password, new_full_name, new_email, is_admin_user)
+                            if result:
+                                # Verify user was actually added
+                                users_after = load_users()
+                                if new_username in users_after:
+                                    st.session_state.admin_message = f"✅ User '{new_username}' added successfully!"
+                                    st.session_state.admin_message_type = "success"
+                                else:
+                                    st.session_state.admin_message = f"⚠️ User '{new_username}' could not be saved. Streamlit Cloud uses a read-only filesystem. Please use Google Sheets or commit the Excel file to GitHub."
+                                    st.session_state.admin_message_type = "warning"
                                 st.rerun()
                             else:
-                                st.session_state.admin_message = "❌ Failed to add user. Please try again."
+                                st.session_state.admin_message = "❌ Failed to add user. Streamlit Cloud uses a read-only filesystem. Please use Google Sheets or commit the Excel file to GitHub."
                                 st.session_state.admin_message_type = "error"
                                 st.rerun()
         
