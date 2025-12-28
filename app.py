@@ -534,12 +534,13 @@ def form_page():
                 st.session_state.odometer_input = int(edit_data.get('odometer_start', 0))
             
             # Set fuel level
+            fuel_options_temp = [""] + fuel_levels
             if 'fuel_level_select' not in st.session_state and edit_data.get('fuel_level'):
                 fuel_value = edit_data.get('fuel_level', '')
-                if fuel_value in fuel_options:
-                    st.session_state.fuel_level_select = fuel_options.index(fuel_value)
-                elif fuel_value == "Other" and "Other" in fuel_options:
-                    st.session_state.fuel_level_select = fuel_options.index("Other")
+                if fuel_value in fuel_options_temp:
+                    st.session_state.fuel_level_select = fuel_options_temp.index(fuel_value)
+                elif fuel_value == "Other" and "Other" in fuel_options_temp:
+                    st.session_state.fuel_level_select = fuel_options_temp.index("Other")
             
             # Set other fuel
             if edit_data.get('other_fuel') and 'other_fuel_input' not in st.session_state:
