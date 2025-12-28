@@ -1539,15 +1539,15 @@ def main():
                         type="primary" if st.session_state.current_page == "form" else "secondary"):
                 st.session_state.current_page = "form"
                 st.rerun()
-            
-            if st.session_state.is_admin:
-                col_idx += 1
-                with menu_cols[col_idx]:
-                    if st.button("👨‍💼 Admin", width='stretch',
-                                type="primary" if st.session_state.current_page == "admin" else "secondary"):
-                        st.session_state.current_page = "admin"
-                        st.rerun()
-            
+        
+        if st.session_state.is_admin:
+            col_idx += 1
+            with menu_cols[col_idx]:
+                if st.button("👨‍💼 Admin", width='stretch',
+                            type="primary" if st.session_state.current_page == "admin" else "secondary"):
+                    st.session_state.current_page = "admin"
+                    st.rerun()
+        
         col_idx += 1
         with menu_cols[col_idx]:
             if st.button("🚪", width='stretch', help="Logout"):
