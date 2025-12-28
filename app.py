@@ -17,12 +17,15 @@ from excel_handler import (
     add_item, delete_item, update_item
 )
 
-# Uygulama başlangıcında Excel dosyasını güncelle (sadece Excel kullanılıyorsa)
+# Uygulama başlangıcında Excel dosyasını güncelle (sadece bir kez, session state ile kontrol)
 # Google Sheets kullanılıyorsa bu fonksiyon hiçbir şey yapmaz
+if 'excel_updated' not in st.session_state:
 try:
     update_excel_with_admin_column()
+        st.session_state.excel_updated = True
 except Exception as e:
     # Bulut ortamında Excel dosyası olmayabilir, bu normal
+        st.session_state.excel_updated = True  # Hata olsa bile tekrar deneme
     pass
 
 # Page configuration - Mobile optimization
@@ -120,6 +123,95 @@ if 'admin_section' not in st.session_state:
 if 'show_welcome' not in st.session_state:
     st.session_state.show_welcome = False
 
+def form_review_page():
+    """Form review page - Show form data before final submission"""
+    try:
+        st.image("Innovo.PNG", width=200)
+    except:
+        pass
+    
+    st.markdown("## 📋 Review Your Form")
+    st.markdown("### Please review your information before submitting.")
+    
+    if st.session_state.form_data_for_review:
+        form_data = st.session_state.form_data_for_review
+        st.markdown("---")
+        st.markdown("#### 📋 Form Information")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            st.write(f"**Driver:** {form_data.get('driver_name', 'N/A')}")
+            st.write(f"**Vehicle:** {form_data.get('vehicle', 'N/A')}")
+            st.write(f"**Odometer:** {form_data.get('odometer_start', 'N/A')} KM")
+            st.write(f"**Fuel Level:** {form_data.get('fuel_level', 'N/A')}")
+            if form_data.get('other_fuel'):
+                st.write(f"**Fuel Level (Manual):** {form_data.get('other_fuel', 'N/A')}")
+        
+        with col2:
+            st.write(f"**Oil Level:** {form_data.get('oil_level', 'N/A')}")
+            st.write(f"**Fuel Card:** {form_data.get('fuel_card', 'N/A')}")
+            st.write(f"**Measuring Tape:** {form_data.get('measuring_tape', 'N/A')}")
+            st.write(f"**Safety Vest:** {form_data.get('safety_vest', 'N/A')}")
+            st.write(f"**Fuel Amount:** {form_data.get('fuel_amount', 'N/A')}")
+        
+        if form_data.get('additional_comments'):
+            st.markdown("---")
+            st.write(f"**Additional Comments:** {form_data.get('additional_comments', 'N/A')}")
+        
+        # Show checks summary
+        st.markdown("---")
+        st.markdown("#### ✅ Checks Summary")
+        
+        exterior_checks = form_data.get('exterior_checks', {})
+        engine_checks = form_data.get('engine_checks', {})
+        safety_checks = form_data.get('safety_checks', {})
+        interior_checks = form_data.get('interior_checks', {})
+        
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.write("**Exterior:**")
+            for field, status in exterior_checks.items():
+                st.write(f"  • {field.replace('_', ' ').title()}: {status}")
+        with col2:
+            st.write("**Engine:**")
+            for field, status in engine_checks.items():
+                st.write(f"  • {field.replace('_', ' ').title()}: {status}")
+        with col3:
+            st.write("**Safety:**")
+            for field, status in safety_checks.items():
+                st.write(f"  • {field.replace('_', ' ').title()}: {status}")
+        with col4:
+            st.write("**Interior:**")
+            for field, status in interior_checks.items():
+                st.write(f"  • {field.replace('_', ' ').title()}: {status}")
+        
+        st.markdown("---")
+        
+        # Action buttons
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("✏️ Edit Form", width='stretch', type="secondary"):
+                st.session_state.show_form_review = False
+                st.session_state.form_data_for_review = None
+                st.rerun()
+        with col2:
+            if st.button("✅ Submit Form", width='stretch', type="primary"):
+                # Save to Excel
+                try:
+                    save_form_submission(form_data)
+                    
+                    # Show thank you screen
+                    st.session_state.form_submitted = True
+                    st.session_state.submitted_form_data = form_data
+                    st.session_state.form_data_for_review = None
+                    st.session_state.show_form_review = False
+                    st.rerun()
+                    
+                except Exception as e:
+                    st.error(f"❌ Error saving form: {str(e)}")
+                    with st.expander("🔍 Error Details"):
+                        st.exception(e)
+
 def thank_you_page():
     """Thank you page after form submission"""
     try:
@@ -175,7 +267,7 @@ def login_page():
         # #region agent log
         _log("C", "app.py:login_page:after_load_users", "Users loaded", {"user_count": len(users), "usernames": list(users.keys())})
         # #endregion agent log
-        
+    
         # Show warning if no users found
         if not users:
             st.warning("⚠️ No users found. Please check your data source (Excel file or Google Sheets).")
@@ -377,12 +469,12 @@ def form_page():
     st.markdown("#### 📋 Basic Information")
     
     # Vehicle selection - Outside form (for auto rerun)
-    vehicle_options = [""] + vehicles + ["Other"]
-    selected_vehicle = st.selectbox(
+        vehicle_options = [""] + vehicles + ["Other"]
+        selected_vehicle = st.selectbox(
         "Vehicle *",
-        options=vehicle_options,
-        key="vehicle_select"
-    )
+            options=vehicle_options,
+            key="vehicle_select"
+        )
         
     # Other Vehicle (conditional) - Outside form
     # Clear session state when "Other" is not selected
@@ -395,7 +487,7 @@ def form_page():
         st.info("ℹ️ **Manual Vehicle Entry:** Please enter the vehicle manually")
         # Get value from session state, or empty string
         current_value = st.session_state.get("other_vehicle_input", "")
-        other_vehicle = st.text_input(
+            other_vehicle = st.text_input(
             "Vehicle Information *",
             placeholder="e.g., FORD Transit 2020",
             key="other_vehicle_input",
@@ -436,21 +528,21 @@ def form_page():
         )
         
         with col2:
-            # Fuel Level
-            fuel_options = [""] + fuel_levels
-            fuel_level = st.selectbox(
+        # Fuel Level
+        fuel_options = [""] + fuel_levels
+        fuel_level = st.selectbox(
                 "⛽ Fuel Level",
-                options=fuel_options,
-                key="fuel_level_select"
-            )
+            options=fuel_options,
+            key="fuel_level_select"
+        )
         
             # Other Fuel (conditional)
-            if fuel_level == "Other":
-                other_fuel = st.text_input(
+        if fuel_level == "Other":
+            other_fuel = st.text_input(
                     "Fuel Level (Manual)",
                     placeholder="Enter manually",
-                    key="other_fuel_input"
-                )
+                key="other_fuel_input"
+            )
         
             # Oil Level - Percentage list
             oil_level_options = ["", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%", "Other"]
@@ -587,7 +679,7 @@ def form_page():
         
         # Large, touch-friendly submit button
         submit_button = st.form_submit_button(
-            "✅ SUBMIT FORM",
+            "📋 REVIEW & SUBMIT",
             width='stretch',
             type="primary"
         )
@@ -623,20 +715,10 @@ def form_page():
                 "additional_comments": additional_comments if additional_comments else ""
             }
             
-            # Save to Excel
-            try:
-                from datetime import datetime
-                save_form_submission(form_data)
-                
-                # Show thank you screen
-                st.session_state.form_submitted = True
-                st.session_state.submitted_form_data = form_data
-                st.rerun()
-                
-            except Exception as e:
-                st.error(f"❌ Error saving form: {str(e)}")
-                with st.expander("🔍 Error Details"):
-                    st.exception(e)
+            # Store form data for review
+            st.session_state.form_data_for_review = form_data
+            st.session_state.show_form_review = True
+            st.rerun()
 
 def admin_panel():
     """Admin paneli - Form gönderimlerini görüntüleme ve kullanıcı yönetimi"""
@@ -1457,15 +1539,15 @@ def main():
                         type="primary" if st.session_state.current_page == "form" else "secondary"):
                 st.session_state.current_page = "form"
                 st.rerun()
-        
-        if st.session_state.is_admin:
-            col_idx += 1
-            with menu_cols[col_idx]:
+            
+            if st.session_state.is_admin:
+                col_idx += 1
+                with menu_cols[col_idx]:
                 if st.button("👨‍💼 Admin", width='stretch',
                             type="primary" if st.session_state.current_page == "admin" else "secondary"):
                     st.session_state.current_page = "admin"
                     st.rerun()
-        
+            
         col_idx += 1
         with menu_cols[col_idx]:
             if st.button("🚪", width='stretch', help="Logout"):
@@ -1486,7 +1568,12 @@ def main():
             st.session_state.current_page = "login"
         login_page()
     else:
-        if st.session_state.current_page == "admin" and st.session_state.is_admin:
+        # Check for form review or thank you page
+        if st.session_state.get('show_form_review', False):
+            form_review_page()
+        elif st.session_state.get('form_submitted', False):
+            thank_you_page()
+        elif st.session_state.current_page == "admin" and st.session_state.is_admin:
             admin_panel()
         else:
             form_page()

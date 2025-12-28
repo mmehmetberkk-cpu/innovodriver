@@ -621,8 +621,17 @@ def add_user(username, password, full_name, email="", is_admin_user=False):
         new_row[admin_col - 1] = "Yes" if is_admin_user else "No"
     
     ws.append(new_row)
-    wb.save(EXCEL_FILE)
-    return True
+    try:
+        wb.save(EXCEL_FILE)
+        return True
+    except PermissionError:
+        # Streamlit Cloud'da dosya sistemi read-only olabilir
+        # Bu durumda kullanıcı eklenemez, ama hata vermemeli
+        _log("W", "excel_handler.py:add_user", "Cannot save to Excel file (read-only filesystem)", {})
+        return False
+    except Exception as e:
+        _log("E", "excel_handler.py:add_user", "Failed to save user to Excel", {"error": str(e)})
+        return False
 
 def delete_user(username):
     """Kullanıcıyı siler"""
