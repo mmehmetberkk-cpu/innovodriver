@@ -859,8 +859,18 @@ def update_excel_with_admin_column():
             else:
                 ws.append(["admin", "admin123", "Admin User", "admin@example.com"])
         
-        wb.save(EXCEL_FILE)
-        _log("D", "excel_handler.py:update_excel_with_admin_column", "Excel updated successfully", {})
+        try:
+            wb.save(EXCEL_FILE)
+            _log("D", "excel_handler.py:update_excel_with_admin_column", "Excel updated successfully", {})
+        except (PermissionError, OSError) as save_error:
+            # Streamlit Cloud'da dosya sistemi read-only olabilir
+            # Bu durumda sadece okuma modunda devam et
+            _log("W", "excel_handler.py:update_excel_with_admin_column", "Cannot save Excel file (read-only filesystem)", {"error": str(save_error)})
+        finally:
+            try:
+                wb.close()
+            except:
+                pass
     except Exception as e:
         # Excel dosyası bozuksa veya oluşturulamazsa hata verme, sadece log
         _log("E", "excel_handler.py:update_excel_with_admin_column", "Failed to update Excel file", {"error": str(e)})
