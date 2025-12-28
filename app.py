@@ -20,13 +20,13 @@ from excel_handler import (
 # Uygulama başlangıcında Excel dosyasını güncelle (sadece bir kez, session state ile kontrol)
 # Google Sheets kullanılıyorsa bu fonksiyon hiçbir şey yapmaz
 if 'excel_updated' not in st.session_state:
-try:
-    update_excel_with_admin_column()
+    try:
+        update_excel_with_admin_column()
         st.session_state.excel_updated = True
-except Exception as e:
-    # Bulut ortamında Excel dosyası olmayabilir, bu normal
+    except Exception as e:
+        # Bulut ortamında Excel dosyası olmayabilir, bu normal
         st.session_state.excel_updated = True  # Hata olsa bile tekrar deneme
-    pass
+        pass
 
 # Page configuration - Mobile optimization
 # Admin panel için sidebar açık, diğer sayfalar için kapalı
@@ -469,8 +469,8 @@ def form_page():
     st.markdown("#### 📋 Basic Information")
     
     # Vehicle selection - Outside form (for auto rerun)
-        vehicle_options = [""] + vehicles + ["Other"]
-        selected_vehicle = st.selectbox(
+    vehicle_options = [""] + vehicles + ["Other"]
+    selected_vehicle = st.selectbox(
         "Vehicle *",
             options=vehicle_options,
             key="vehicle_select"
