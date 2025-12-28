@@ -191,6 +191,8 @@ def form_review_page():
         col1, col2 = st.columns(2)
         with col1:
             if st.button("✏️ Edit Form", width='stretch', type="secondary"):
+                # Store form data for editing
+                st.session_state.form_data_for_edit = form_data
                 st.session_state.show_form_review = False
                 st.session_state.form_data_for_review = None
                 st.rerun()
@@ -468,13 +470,33 @@ def form_page():
     st.markdown("---")
     st.markdown("#### 📋 Basic Information")
     
+    # Check if we're editing a form
+    edit_data = st.session_state.get('form_data_for_edit', None)
+    
     # Vehicle selection - Outside form (for auto rerun)
     vehicle_options = [""] + vehicles + ["Other"]
+    
+    # If editing, pre-select the vehicle
+    default_vehicle_index = 0
+    if edit_data:
+        vehicle_value = edit_data.get('vehicle', '')
+        if vehicle_value in vehicle_options:
+            default_vehicle_index = vehicle_options.index(vehicle_value)
+        elif vehicle_value and vehicle_value not in vehicle_options:
+            # If vehicle is "Other", select "Other" option
+            if "Other" in vehicle_options:
+                default_vehicle_index = vehicle_options.index("Other")
+    
     selected_vehicle = st.selectbox(
         "Vehicle *",
-            options=vehicle_options,
-            key="vehicle_select"
-        )
+        options=vehicle_options,
+        key="vehicle_select",
+        index=default_vehicle_index if not st.session_state.get('vehicle_select_changed', False) else None
+    )
+    
+    # Track if vehicle selection changed
+    if 'vehicle_select' in st.session_state:
+        st.session_state.vehicle_select_changed = True
         
     # Other Vehicle (conditional) - Outside form
     # Clear session state when "Other" is not selected
@@ -505,6 +527,85 @@ def form_page():
         other_oil = None
         other_fuel = None
         
+        # If editing, populate session state with edit data
+        if edit_data:
+            # Set odometer
+            if 'odometer_input' not in st.session_state and edit_data.get('odometer_start'):
+                st.session_state.odometer_input = int(edit_data.get('odometer_start', 0))
+            
+            # Set fuel level
+            if 'fuel_level_select' not in st.session_state and edit_data.get('fuel_level'):
+                fuel_value = edit_data.get('fuel_level', '')
+                if fuel_value in fuel_options:
+                    st.session_state.fuel_level_select = fuel_options.index(fuel_value)
+                elif fuel_value == "Other" and "Other" in fuel_options:
+                    st.session_state.fuel_level_select = fuel_options.index("Other")
+            
+            # Set other fuel
+            if edit_data.get('other_fuel') and 'other_fuel_input' not in st.session_state:
+                st.session_state.other_fuel_input = edit_data.get('other_fuel', '')
+            
+            # Set oil level
+            oil_level_options_temp = ["", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%", "Other"]
+            if 'oil_level_select' not in st.session_state and edit_data.get('oil_level'):
+                oil_value = edit_data.get('oil_level', '')
+                if oil_value in oil_level_options_temp:
+                    st.session_state.oil_level_select = oil_level_options_temp.index(oil_value)
+                elif oil_value and oil_value not in oil_level_options_temp:
+                    if "Other" in oil_level_options_temp:
+                        st.session_state.oil_level_select = oil_level_options_temp.index("Other")
+            
+            # Set other oil
+            if edit_data.get('oil_level') and edit_data.get('oil_level') not in oil_level_options:
+                if 'other_oil_input' not in st.session_state:
+                    st.session_state.other_oil_input = edit_data.get('oil_level', '')
+            
+            # Set check fields
+            if edit_data.get('exterior_checks'):
+                for field, value in edit_data.get('exterior_checks', {}).items():
+                    key = f"exterior_{field}"
+                    if key not in st.session_state:
+                        st.session_state[key] = "✅ OK" if value == "OK" else "⚠️ Needs Attention"
+            
+            if edit_data.get('engine_checks'):
+                for field, value in edit_data.get('engine_checks', {}).items():
+                    key = f"engine_{field}"
+                    if key not in st.session_state:
+                        st.session_state[key] = "✅ OK" if value == "OK" else "⚠️ Needs Attention"
+            
+            if edit_data.get('safety_checks'):
+                for field, value in edit_data.get('safety_checks', {}).items():
+                    key = f"safety_{field}"
+                    if key not in st.session_state:
+                        st.session_state[key] = "✅ OK" if value == "OK" else "⚠️ Needs Attention"
+            
+            if edit_data.get('interior_checks'):
+                for field, value in edit_data.get('interior_checks', {}).items():
+                    key = f"interior_{field}"
+                    if key not in st.session_state:
+                        st.session_state[key] = "✅ OK" if value == "OK" else "⚠️ Needs Attention"
+            
+            # Set items
+            if edit_data.get('fuel_card'):
+                if 'fuel_card_radio' not in st.session_state:
+                    st.session_state.fuel_card_radio = "✅" if edit_data.get('fuel_card') == "Yes" else "❌"
+            
+            if edit_data.get('measuring_tape'):
+                if 'measuring_tape_radio' not in st.session_state:
+                    st.session_state.measuring_tape_radio = "✅" if edit_data.get('measuring_tape') == "Yes" else "❌"
+            
+            if edit_data.get('safety_vest'):
+                if 'safety_vest_radio' not in st.session_state:
+                    st.session_state.safety_vest_radio = "✅" if edit_data.get('safety_vest') == "Yes" else "❌"
+            
+            # Set fuel amount
+            if edit_data.get('fuel_amount') and 'fuel_amount_input' not in st.session_state:
+                st.session_state.fuel_amount_input = str(edit_data.get('fuel_amount', ''))
+            
+            # Set additional comments
+            if edit_data.get('additional_comments') and 'additional_comments_input' not in st.session_state:
+                st.session_state.additional_comments_input = edit_data.get('additional_comments', '')
+        
         # Compact basic information - 2 columns
         col1, col2 = st.columns(2)
         
@@ -530,36 +631,67 @@ def form_page():
         with col2:
             # Fuel Level
             fuel_options = [""] + fuel_levels
+            default_fuel_index = None
+            if edit_data and edit_data.get('fuel_level'):
+                fuel_value = edit_data.get('fuel_level', '')
+                if fuel_value in fuel_options:
+                    default_fuel_index = fuel_options.index(fuel_value)
+                elif fuel_value == "Other" and "Other" in fuel_options:
+                    default_fuel_index = fuel_options.index("Other")
+            
             fuel_level = st.selectbox(
                 "⛽ Fuel Level",
                 options=fuel_options,
-                key="fuel_level_select"
+                key="fuel_level_select",
+                index=default_fuel_index if default_fuel_index is not None else None
             )
             
             # Other Fuel (conditional)
             if fuel_level == "Other":
+                default_other_fuel = ''
+                if edit_data and edit_data.get('other_fuel'):
+                    default_other_fuel = edit_data.get('other_fuel', '')
+                elif 'other_fuel_input' in st.session_state:
+                    default_other_fuel = st.session_state.other_fuel_input
                 other_fuel = st.text_input(
                     "Fuel Level (Manual)",
                     placeholder="Enter manually",
-                    key="other_fuel_input"
+                    key="other_fuel_input",
+                    value=default_other_fuel
                 )
             else:
                 other_fuel = None
             
             # Oil Level - Percentage list
             oil_level_options = ["", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%", "100%", "Other"]
+            default_oil_index = None
+            if edit_data and edit_data.get('oil_level'):
+                oil_value = edit_data.get('oil_level', '')
+                if oil_value in oil_level_options:
+                    default_oil_index = oil_level_options.index(oil_value)
+                elif oil_value and oil_value not in oil_level_options:
+                    if "Other" in oil_level_options:
+                        default_oil_index = oil_level_options.index("Other")
+            
             oil_level = st.selectbox(
                 "🛢️ Oil Level",
                 options=oil_level_options,
-                key="oil_level_select"
+                key="oil_level_select",
+                index=default_oil_index if default_oil_index is not None else None
             )
             
             # Other Oil Level (conditional)
             if oil_level == "Other":
+                default_other_oil = ''
+                if edit_data and edit_data.get('oil_level') and edit_data.get('oil_level') not in oil_level_options:
+                    default_other_oil = edit_data.get('oil_level', '')
+                elif 'other_oil_input' in st.session_state:
+                    default_other_oil = st.session_state.other_oil_input
                 other_oil = st.text_input(
                     "Oil Level (Manual)",
                     placeholder="e.g., 15% or Low",
-                    key="other_oil_input"
+                    key="other_oil_input",
+                    value=default_other_oil
                 )
             else:
                 other_oil = None
