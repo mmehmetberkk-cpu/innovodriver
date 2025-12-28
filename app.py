@@ -528,13 +528,13 @@ def form_page():
         )
         
         with col2:
-        # Fuel Level
-        fuel_options = [""] + fuel_levels
-        fuel_level = st.selectbox(
+            # Fuel Level
+            fuel_options = [""] + fuel_levels
+            fuel_level = st.selectbox(
                 "⛽ Fuel Level",
-            options=fuel_options,
-            key="fuel_level_select"
-        )
+                options=fuel_options,
+                key="fuel_level_select"
+            )
         
             # Other Fuel (conditional)
         if fuel_level == "Other":
