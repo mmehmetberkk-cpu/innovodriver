@@ -557,7 +557,7 @@ def form_page():
                         st.session_state.oil_level_select = oil_level_options_temp.index("Other")
             
             # Set other oil
-            if edit_data.get('oil_level') and edit_data.get('oil_level') not in oil_level_options:
+            if edit_data.get('oil_level') and edit_data.get('oil_level') not in oil_level_options_temp:
                 if 'other_oil_input' not in st.session_state:
                     st.session_state.other_oil_input = edit_data.get('oil_level', '')
             
